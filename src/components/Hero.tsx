@@ -3,17 +3,25 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRightIcon } from "./Icons";
+import Parallax from "./motion/Parallax";
 
 const cards = [
   {
     src: "/images/hero/hero-sunflower.jpg",
     alt: "Woman with raised arms in a sunflower field",
+    /**
+     * Only the two large cards drift on scroll. The small ones (the DJ strip,
+     * the pool circle) are too short for the movement to read as anything but
+     * jitter, and a collage where every piece moves separately is noise.
+     */
+    parallax: true,
     className:
       "left-[34%] top-0 h-[64%] w-[56%] z-[2] shadow-[0_20px_40px_-14px_rgba(30,26,22,0.28)] rounded-2xl lg:left-auto lg:right-0 lg:top-0 lg:h-[62%] lg:w-[58%] lg:rounded-[18px] lg:shadow-[0_26px_50px_-16px_rgba(30,26,22,0.3)]",
   },
   {
     src: "/images/hero/hero-runner.jpg",
     alt: "Man jogging along a waterfront promenade",
+    parallax: true,
     className:
       "left-0 top-[14%] h-[48%] w-[38%] z-[1] shadow-[0_16px_32px_-14px_rgba(30,26,22,0.24)] rounded-2xl lg:top-[16%] lg:h-[50%] lg:w-[36%] lg:rounded-[18px] lg:shadow-[0_22px_42px_-16px_rgba(30,26,22,0.26)]",
   },
@@ -40,7 +48,7 @@ export default function Hero() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="flex flex-col justify-center px-5 pt-10 pb-6 lg:bg-bg lg:px-16 lg:py-14"
       >
-        <h1 className="font-serif text-[30px] font-semibold leading-[1.1] text-balance text-ink lg:text-[42px] lg:leading-[1.06]">
+        <h1 className="font-serif text-[30px] font-medium leading-[1.1] text-balance text-ink lg:text-[42px] lg:leading-[1.06]">
           <span className="block text-balance">Your city didn&#39;t stay home.</span>
           <span className="block text-balance">Neither should you.</span>
         </h1>
@@ -49,7 +57,7 @@ export default function Hero() {
         </p>
         <a
           href="#whats-on"
-          className="mt-5 flex w-fit items-center gap-2 rounded-full bg-accent px-6 py-3 text-[14px] font-semibold tracking-[0.01em] text-white no-underline transition hover:gap-3 hover:brightness-110 lg:mt-7 lg:px-7 lg:py-3.5 lg:text-[15px]"
+          className="mt-5 flex w-fit items-center gap-2 rounded-full bg-accent px-6 py-2 text-[14px] font-semibold tracking-[0.01em] text-white no-underline transition hover:gap-3 hover:brightness-110 lg:mt-7 lg:px-7 lg:py-2.5 lg:text-[15px]"
         >
           Start exploring
           <ArrowRightIcon className="h-4 w-4" />
@@ -66,13 +74,25 @@ export default function Hero() {
               transition={{ duration: 0.55, delay: 0.15 + i * 0.1, ease: "easeOut" }}
               className={`absolute overflow-hidden ${card.className}`}
             >
-              <Image
-                src={card.src}
-                alt={card.alt}
-                fill
-                sizes="(min-width: 1024px) 40vw, 60vw"
-                className="object-cover"
-              />
+              {card.parallax ? (
+                <Parallax>
+                  <Image
+                    src={card.src}
+                    alt={card.alt}
+                    fill
+                    sizes="(min-width: 1024px) 40vw, 60vw"
+                    className="object-cover"
+                  />
+                </Parallax>
+              ) : (
+                <Image
+                  src={card.src}
+                  alt={card.alt}
+                  fill
+                  sizes="(min-width: 1024px) 40vw, 60vw"
+                  className="object-cover"
+                />
+              )}
             </motion.div>
           ))}
         </div>

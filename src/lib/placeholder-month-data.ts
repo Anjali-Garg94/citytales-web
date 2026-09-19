@@ -258,6 +258,31 @@ export function weekdayShort(isoDate: string): string {
     .toUpperCase();
 }
 
+/** "2026-09-02" -> "2nd" (ordinal day number) */
+export function dayOrdinal(isoDate: string): string {
+  const day = Number(isoDate.slice(8, 10));
+  if (Number.isNaN(day)) return "";
+  const suffix =
+    day % 10 === 1 && day !== 11
+      ? "st"
+      : day % 10 === 2 && day !== 12
+        ? "nd"
+        : day % 10 === 3 && day !== 13
+          ? "rd"
+          : "th";
+  return `${day}${suffix}`;
+}
+
+/** "2026-09-02" -> "Sept", "2026-10-02" -> "Oct" (short month, Asia/Kolkata) */
+export function monthShort(isoDate: string): string {
+  const d = new Date(`${isoDate}T12:00:00+05:30`);
+  if (Number.isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("en-GB", {
+    month: "short",
+    timeZone: "Asia/Kolkata",
+  }).format(d);
+}
+
 /** Groups events by date, preserving order, for the date-anchored list. */
 export function groupByDate(events: MonthEvent[]): [string, MonthEvent[]][] {
   const groups = new Map<string, MonthEvent[]>();

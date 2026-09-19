@@ -16,7 +16,7 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <OrganisersMarquee />
-        <section className="border-t border-line px-5 pt-9 pb-11 lg:mx-auto lg:max-w-[1280px] lg:px-20 lg:pt-12 lg:pb-14">
+        <section className="px-5 pt-9 pb-4 lg:mx-auto lg:max-w-[1280px] lg:px-20 lg:pt-12 lg:pb-6">
           <TodayEvents />
         </section>
         <ThisMonthSection />

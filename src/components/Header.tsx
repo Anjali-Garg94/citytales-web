@@ -1,20 +1,16 @@
 import Link from "next/link";
+import HeaderMobileMenu from "./HeaderMobileMenu";
 import { SearchIcon } from "./Icons";
 import { navLinks } from "@/lib/data";
 
 export default function Header() {
   return (
     <header className="flex items-center justify-between px-5 py-[18px] lg:px-20 lg:py-6">
-      {/* Logo */}
-      <Link
-        href="/"
-        className="flex flex-col items-center text-ink no-underline lg:items-start"
-      >
-        <span className="font-serif text-[21px] font-bold leading-none tracking-[0.01em] lg:text-2xl">
-          CityTales
-        </span>
-        <span className="mt-[3px] text-[9px] font-semibold tracking-[0.18em] text-ink-soft lg:mt-1 lg:text-[9.5px]">
-          WHAT&#39;S ON
+      {/* Wordmark — same treatment as the "Later this month" section labels
+          (11px, semibold, wide tracking, uppercase), in ink rather than accent. */}
+      <Link href="/" className="flex shrink-0 items-center no-underline">
+        <span className="text-[11px] font-semibold tracking-[0.14em] text-ink uppercase">
+          City Tales
         </span>
       </Link>
 
@@ -31,8 +27,11 @@ export default function Header() {
         ))}
       </nav>
 
-      {/* Mobile: search icon */}
-      <SearchIcon className="h-5 w-5 text-ink lg:hidden" />
+      {/* Mobile: search + hamburger */}
+      <div className="flex items-center gap-4 lg:hidden">
+        <SearchIcon className="h-5 w-5 text-ink" />
+        <HeaderMobileMenu />
+      </div>
 
       {/* Desktop: search + CTA */}
       <div className="hidden items-center gap-[22px] lg:flex">

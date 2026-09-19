@@ -5,7 +5,7 @@ export default function FeaturedEvents() {
   const [main, ...rest] = featuredEvents;
 
   return (
-    <section className="border-t border-line px-5 pt-2 pb-14 lg:mx-auto lg:max-w-[1280px] lg:px-20 lg:pb-16">
+    <section className="px-5 pt-2 pb-14 lg:mx-auto lg:max-w-[1280px] lg:px-20 lg:pb-16">
       <div className="mt-9 mb-6 font-serif text-[26px] font-semibold lg:mt-12 lg:mb-[30px] lg:text-[34px]">
         Featured this week
       </div>

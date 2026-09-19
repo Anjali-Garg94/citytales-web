@@ -3,7 +3,7 @@ import { browseSections } from "@/lib/data";
 
 export default function BrowseBySection() {
   return (
-    <section className="border-t border-line px-5 pt-2 pb-14 lg:mx-auto lg:max-w-[1280px] lg:px-20 lg:pb-16">
+    <section className="px-5 pt-2 pb-14 lg:mx-auto lg:max-w-[1280px] lg:px-20 lg:pb-16">
       <div className="mt-9 mb-[22px] font-serif text-[26px] font-semibold lg:mt-12 lg:mb-7 lg:text-[34px]">
         Browse by section
       </div>

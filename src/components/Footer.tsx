@@ -16,7 +16,7 @@ const cityTalesLinks = [
 
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t border-line bg-bg px-5 pt-11 pb-10 lg:px-20 lg:pt-14 lg:pb-9">
+    <footer className="mt-auto bg-bg px-5 pt-11 pb-10 lg:px-20 lg:pt-14 lg:pb-9">
       <div className="lg:mx-auto lg:grid lg:max-w-[1280px] lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-10">
         <div>
           <div className="font-serif text-[22px] font-bold lg:text-2xl">CityTales</div>
@@ -71,7 +71,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="mt-9 flex items-center justify-between border-t border-line pt-5 lg:mx-auto lg:mt-12 lg:max-w-[1280px] lg:pt-[22px]">
+      <div className="mt-9 flex items-center justify-between pt-5 lg:mx-auto lg:mt-12 lg:max-w-[1280px] lg:pt-[22px]">
         <div className="text-[11px] text-ink-soft lg:text-[11.5px]">
           © 2026 CityTales
         </div>

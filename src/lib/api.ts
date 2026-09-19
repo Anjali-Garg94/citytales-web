@@ -564,3 +564,60 @@ export async function getEventCategories(): Promise<EventCategory[]> {
     return FALLBACK_EVENT_CATEGORIES;
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * Cities — city picker for the sign-up profile step
+ * ------------------------------------------------------------------ */
+
+export type City = {
+  id: string;
+  name: string;
+  district?: string | null;
+  state?: string | null;
+  country?: string | null;
+};
+
+/** Only Ludhiana is live today — a single-entry list is a safe fallback. */
+const FALLBACK_CITIES: City[] = [
+  { id: CITY_ID, name: "Ludhiana", district: "Ludhiana", state: "Punjab", country: "India" },
+];
+
+function isCityRecord(value: unknown): value is City {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return typeof v.id === "string" && typeof v.name === "string";
+}
+
+/**
+ * Fetches the list of cities the app supports, for the sign-up profile
+ * step's city picker. GET /api/v1/city -> a plain array.
+ */
+export async function getCities(): Promise<City[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/city`, {
+      next: { revalidate: 3600 },
+    });
+
+    if (!res.ok) {
+      console.error(
+        `[cities] API responded ${res.status} ${res.statusText} — using fallback cities`,
+      );
+      return FALLBACK_CITIES;
+    }
+
+    const json: unknown = await res.json();
+    if (!Array.isArray(json)) {
+      console.error("[cities] Expected an array — using fallback cities");
+      return FALLBACK_CITIES;
+    }
+
+    const items = json.filter(isCityRecord);
+    return items.length > 0 ? items : FALLBACK_CITIES;
+  } catch (error) {
+    console.error(
+      "[cities] Fetch failed — using fallback cities:",
+      error instanceof Error ? error.message : error,
+    );
+    return FALLBACK_CITIES;
+  }
+}
