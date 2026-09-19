@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #ffffff;
+  --ink: #1e1a16;
+  --ink-soft: #6b6258;
+  --line: #e6e0d6;
+  --accent: #178fd7;
+  --accent-deep: #0e5681;
+  --accent-tint: #ecf4f9;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-accent-tint: var(--accent-tint);
+  /*
+   * Site-wide typeface: Helvetica Neue everywhere (body and the headings
+   * that use font-serif alike). Helvetica and Arial are the fallbacks for
+   * platforms that don't ship Helvetica Neue (Windows, most Android/Linux).
+   */
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-serif: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes marquee-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes marquee-down {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Right to left: content slides in from the right, exits on the left. */
+@keyframes marquee-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-up {
+  animation: marquee-up linear infinite;
+}
+
+.animate-marquee-down {
+  animation: marquee-down linear infinite;
+}
+
+.animate-marquee-left {
+  animation: marquee-left linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-up,
+  .animate-marquee-down,
+  .animate-marquee-left {
+    animation: none;
+  }
+}
