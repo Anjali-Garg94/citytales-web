@@ -7,21 +7,16 @@ import type { WeekendEvent } from "@/lib/placeholder-month-data";
 import { ArrowRightIcon } from "../Icons";
 
 /**
- * Centre-highlight carousel.
- *
- * Built on native horizontal scrolling with CSS scroll-snap rather than a
- * transform track: momentum scrolling, swipe and keyboard all come for free on
- * touch devices, and the arrows just scroll the container. The "which card is
- * highlighted" state is derived from scroll position — whichever card centre is
- * nearest the container centre wins — so dragging and tapping stay in sync.
- *
- * Note: the controls are styled for a DARK ground (white arrows, white dots).
- * Reusing this on a light section needs a tone prop.
+ * Centre-highlight carousel with left/right arrows overlaid mid-height on
+ * the active picture. The View event CTA lives outside this component (below
+ * the black band) — parent tracks the active card via onActiveChange.
  */
 export default function MusicPartiesCarousel({
   events,
+  onActiveChange,
 }: {
   events: WeekendEvent[];
+  onActiveChange?: (event: WeekendEvent | undefined) => void;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLAnchorElement | null)[]>([]);
@@ -52,9 +47,19 @@ export default function MusicPartiesCarousel({
     return () => window.removeEventListener("resize", syncActive);
   }, [syncActive]);
 
+  useEffect(() => {
+    onActiveChange?.(events[active]);
+  }, [active, events, onActiveChange]);
+
+  // Reset when the tab swaps in a new list.
+  useEffect(() => {
+    setActive(0);
+    scrollerRef.current?.scrollTo({ left: 0 });
+    onActiveChange?.(events[0]);
+  }, [events, onActiveChange]);
+
   const scrollToIndex = (index: number) => {
     const clamped = Math.max(0, Math.min(events.length - 1, index));
-    // block:"nearest" keeps the page from jumping vertically.
     cardRefs.current[clamped]?.scrollIntoView({
       behavior: "smooth",
       inline: "center",
@@ -62,10 +67,8 @@ export default function MusicPartiesCarousel({
     });
   };
 
-  const activeEvent = events[active];
-
   return (
-    <div>
+    <div className="relative">
       <div
         ref={scrollerRef}
         onScroll={syncActive}
@@ -116,51 +119,25 @@ export default function MusicPartiesCarousel({
         })}
       </div>
 
-      {/* Controls — the centre CTA follows whichever card is highlighted */}
-      <div className="mt-2 flex items-center justify-center gap-3 lg:mt-3 lg:gap-4">
-        <button
-          type="button"
-          onClick={() => scrollToIndex(active - 1)}
-          disabled={active === 0}
-          aria-label="Previous event"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-ink transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-25"
-        >
-          <ArrowRightIcon className="h-4 w-4 rotate-180" />
-        </button>
-
-        <Link
-          href={`/events/${activeEvent?.slug ?? ""}`}
-          className="flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-[14px] font-semibold text-white no-underline transition hover:gap-3 hover:brightness-110"
-        >
-          View event
-          <ArrowRightIcon className="h-4 w-4" />
-        </Link>
-
-        <button
-          type="button"
-          onClick={() => scrollToIndex(active + 1)}
-          disabled={active === events.length - 1}
-          aria-label="Next event"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-ink transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-25"
-        >
-          <ArrowRightIcon className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* Position dots */}
-      <div className="mt-5 flex items-center justify-center gap-1.5">
-        {events.map((event, i) => (
-          <button
-            key={event.id}
-            type="button"
-            onClick={() => scrollToIndex(i)}
-            aria-label={`Go to ${event.title}`}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === active ? "w-5 bg-white" : "w-1.5 bg-white/25"
-            }`}
-          />
-        ))}
-      </div>
+      {/* Mid-height arrows on the left and right of the carousel */}
+      <button
+        type="button"
+        onClick={() => scrollToIndex(active - 1)}
+        disabled={active === 0}
+        aria-label="Previous event"
+        className="absolute top-1/2 left-3 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-ink shadow-[0_8px_24px_rgba(0,0,0,0.25)] transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-25 lg:left-6 lg:h-12 lg:w-12"
+      >
+        <ArrowRightIcon className="h-4 w-4 rotate-180" />
+      </button>
+      <button
+        type="button"
+        onClick={() => scrollToIndex(active + 1)}
+        disabled={active === events.length - 1}
+        aria-label="Next event"
+        className="absolute top-1/2 right-3 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-ink shadow-[0_8px_24px_rgba(0,0,0,0.25)] transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-25 lg:right-6 lg:h-12 lg:w-12"
+      >
+        <ArrowRightIcon className="h-4 w-4" />
+      </button>
     </div>
   );
 }

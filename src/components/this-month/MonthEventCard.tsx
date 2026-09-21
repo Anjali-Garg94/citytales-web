@@ -10,19 +10,13 @@ import {
   weekdayShort,
   type MonthEvent,
 } from "@/lib/placeholder-month-data";
-import { categoryBadgeColors } from "@/lib/category-badge";
-import { PinIcon } from "../Icons";
 import { fadeUp, viewport } from "../motion/variants";
 
 /**
- * White photo-topped card for the "This week" grid — taller image up top,
- * colour-coded category pill straddling the photo/card boundary, then title,
- * date, and venue on a plain white ground.
+ * This Week card — community-card layout:
+ * top row: square photo + category pill, then event name, then date.
  *
- * `index` is the card's position in the grid and only drives the reveal
- * delay: `% 2` matches the two columns, so a row's pair arrives together and
- * the grid cascades downward. Capped at four steps — a card further down the
- * grid should not inherit a long wait from the cards above it.
+ * `index` only drives the reveal delay (two-column cascade).
  */
 export default function MonthEventCard({
   event,
@@ -32,7 +26,6 @@ export default function MonthEventCard({
   index?: number;
 }) {
   const [saved, setSaved] = useState(false);
-  const colors = categoryBadgeColors(event.category);
   const delay = Math.min(Math.floor(index / 2), 3) * 0.08 + (index % 2) * 0.05;
 
   const dateLabel = [
@@ -44,67 +37,56 @@ export default function MonthEventCard({
 
   return (
     <motion.div
-      className="relative overflow-hidden rounded-[16px] bg-white shadow-[0_2px_14px_rgba(30,26,22,0.1)] lg:rounded-[18px]"
+      className="relative rounded-[18px] border border-[#F0EEEA] bg-white lg:rounded-[20px]"
       initial="hidden"
       whileInView="visible"
       viewport={viewport}
       variants={fadeUp(delay, 20)}
     >
-      <Link href={`/events/${event.slug}`} className="group block no-underline">
-        <div className="relative aspect-square w-full overflow-hidden">
-          <Image
-            src={event.image}
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 33vw, 50vw"
-            className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
-          />
-        </div>
-
-        <div className="relative px-3.5 pt-5 pb-3.5 lg:px-4 lg:pt-6 lg:pb-4">
-          {/* Category pill — straddles the photo/card boundary */}
-          <span
-            className="absolute -top-3 left-3.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold lg:-top-3.5 lg:left-4 lg:text-[11px]"
-            style={{ backgroundColor: colors.bg, color: colors.text }}
-          >
-            {event.category}
-          </span>
-
-          <div className="line-clamp-2 text-[16px] leading-[1.25] font-semibold text-ink lg:text-[18px]">
-            {event.title}
-          </div>
-
-          {dateLabel ? (
-            <div className="mt-1.5 text-[12px] text-ink-soft lg:text-[13px]">
-              {dateLabel}
-              {event.startTime ? ` · ${event.startTime}` : ""}
-            </div>
-          ) : null}
-
-          <div className="mt-1.5 flex items-center gap-1.5 text-[11.5px] text-ink-soft lg:text-[12.5px]">
-            <PinIcon className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{event.venue}</span>
-          </div>
-        </div>
-      </Link>
-
-      {/* Save — deliberately low-contrast, sits above the link */}
       <button
         type="button"
         onClick={() => setSaved((s) => !s)}
         aria-label={saved ? `Remove ${event.title} from saved` : `Save ${event.title}`}
         aria-pressed={saved}
-        className="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/85 backdrop-blur-sm transition hover:bg-white lg:top-3 lg:right-3 lg:h-8 lg:w-8"
+        className="absolute top-3.5 right-3.5 flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-ink transition hover:border-ink lg:top-4 lg:right-4 lg:h-10 lg:w-10"
       >
-        <svg viewBox="0 0 24 24" className="h-[13px] w-[13px] lg:h-4 lg:w-4" fill={saved ? "#C1481D" : "none"}>
+        <svg viewBox="0 0 24 24" className="h-4 w-4 lg:h-[18px] lg:w-[18px]" fill={saved ? "#C1481D" : "none"}>
           <path
             d="M12 20.5C12 20.5 4 15.8 4 9.9C4 7.2 6.1 5 8.7 5C10.1 5 11.3 5.7 12 6.8C12.7 5.7 13.9 5 15.3 5C17.9 5 20 7.2 20 9.9C20 15.8 12 20.5 12 20.5Z"
-            stroke={saved ? "#C1481D" : "#1E1A16"}
+            stroke={saved ? "#C1481D" : "currentColor"}
             strokeWidth="1.6"
             strokeLinejoin="round"
           />
         </svg>
       </button>
+
+      <Link
+        href={`/events/${event.slug}`}
+        className="group block px-3.5 py-3.5 no-underline lg:px-4 lg:py-4"
+      >
+        <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[14px] lg:h-20 lg:w-20 lg:rounded-2xl">
+          <Image
+            src={event.image}
+            alt=""
+            fill
+            sizes="80px"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </div>
+
+        {/* Event name */}
+        <div className="mt-3.5 line-clamp-2 text-[15px] leading-[1.25] font-bold text-ink lg:mt-4 lg:text-[17px]">
+          {event.title}
+        </div>
+
+        {/* Date */}
+        {dateLabel ? (
+          <div className="mt-1.5 text-[12px] leading-[1.4] text-ink-soft lg:text-[13px]">
+            {dateLabel}
+            {event.startTime ? ` · ${event.startTime}` : ""}
+          </div>
+        ) : null}
+      </Link>
     </motion.div>
   );
 }

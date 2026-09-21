@@ -175,13 +175,16 @@ export default function ThisMonthSectionClient({
                 ))}
               </div>
 
-              <RevealItem inGroup={false} className="mt-5 px-5 lg:px-20">
+              <RevealItem
+                inGroup={false}
+                className="mt-5 flex justify-center px-5 lg:mt-6 lg:px-20"
+              >
                 <Link
                   href="/this-week"
-                  className="flex items-center justify-center gap-1.5 rounded-full border border-line py-3 text-[13px] font-semibold text-ink no-underline hover:border-ink"
+                  className="flex w-fit items-center gap-2 rounded-full bg-accent px-6 py-2 text-[14px] font-semibold tracking-[0.01em] text-white no-underline transition hover:gap-3 hover:brightness-110 lg:px-7 lg:py-2.5 lg:text-[15px]"
                 >
                   See all this Week
-                  <ArrowRightIcon className="h-3.5 w-3.5" />
+                  <ArrowRightIcon className="h-4 w-4" />
                 </Link>
               </RevealItem>
             </div>
