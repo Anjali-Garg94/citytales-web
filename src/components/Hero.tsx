@@ -16,14 +16,14 @@ const cards = [
      */
     parallax: true,
     className:
-      "left-[34%] top-0 h-[64%] w-[56%] z-[2] shadow-[0_20px_40px_-14px_rgba(30,26,22,0.28)] rounded-2xl lg:left-auto lg:right-0 lg:top-0 lg:h-[62%] lg:w-[58%] lg:rounded-[18px] lg:shadow-[0_26px_50px_-16px_rgba(30,26,22,0.3)]",
+      "left-[40%] top-0 h-[64%] w-[56%] z-[1] shadow-[0_20px_40px_-14px_rgba(30,26,22,0.28)] rounded-2xl lg:left-auto lg:right-[-3%] lg:top-0 lg:h-[62%] lg:w-[58%] lg:rounded-[18px] lg:shadow-[0_26px_50px_-16px_rgba(30,26,22,0.3)]",
   },
   {
-    src: "/images/hero/hero-runner.jpg",
-    alt: "Man jogging along a waterfront promenade",
+    src: "/images/hero/hero-fair-couple.jpg",
+    alt: "Couple laughing at a nighttime fair with a Ferris wheel behind them",
     parallax: true,
     className:
-      "left-0 top-[14%] h-[48%] w-[38%] z-[1] shadow-[0_16px_32px_-14px_rgba(30,26,22,0.24)] rounded-2xl lg:top-[16%] lg:h-[50%] lg:w-[36%] lg:rounded-[18px] lg:shadow-[0_22px_42px_-16px_rgba(30,26,22,0.26)]",
+      "left-[2%] top-[10%] h-[56%] w-[44%] z-[3] shadow-[0_16px_32px_-14px_rgba(30,26,22,0.24)] rounded-2xl lg:left-[2%] lg:top-[12%] lg:h-[58%] lg:w-[42%] lg:rounded-[18px] lg:shadow-[0_22px_42px_-16px_rgba(30,26,22,0.26)]",
   },
   {
     src: "/images/hero/hero-dj-coffee.jpg",
@@ -35,7 +35,7 @@ const cards = [
     src: "/images/hero/hero-kids-pool.jpg",
     alt: "Kid floating in a pool with an inflatable ring",
     className:
-      "right-[8%] bottom-0 h-32 w-32 z-[4] shadow-[0_14px_28px_-12px_rgba(30,26,22,0.3)] rounded-full lg:right-[20%] lg:bottom-0 lg:h-[190px] lg:w-[190px] lg:shadow-[0_18px_34px_-14px_rgba(30,26,22,0.32)]",
+      "right-[8%] bottom-0 h-36 w-36 z-[4] shadow-[0_14px_28px_-12px_rgba(30,26,22,0.3)] rounded-full lg:right-[20%] lg:bottom-0 lg:h-[220px] lg:w-[220px] lg:shadow-[0_18px_34px_-14px_rgba(30,26,22,0.32)]",
   },
 ];
 

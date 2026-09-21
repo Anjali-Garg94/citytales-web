@@ -19,7 +19,7 @@ export default async function OrganisersMarquee() {
     <section className="overflow-hidden">
       <RevealGroup className="px-5 pt-9 pb-[22px] lg:mx-auto lg:max-w-[1280px] lg:px-20 lg:pt-12 lg:pb-7">
         <RevealItem>
-          <div className="font-serif text-[26px] font-medium leading-[1.15] lg:text-[34px]">
+          <div className="font-serif text-xl font-medium leading-[1.15] lg:text-[26px]">
             Organisers you love
           </div>
         </RevealItem>

@@ -42,7 +42,7 @@ export default function LiveMusicWeekendClient({ thisWeekend, all }: Props) {
           stagger={0.08}
         >
           <RevealItem>
-            <h2 className="font-serif text-[26px] font-medium leading-[1.15] text-ink lg:text-[34px]">
+            <h2 className="font-serif text-xl font-medium leading-[1.15] text-ink lg:text-[26px]">
               Live music &amp; parties
             </h2>
           </RevealItem>

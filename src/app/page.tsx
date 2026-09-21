@@ -16,9 +16,7 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <OrganisersMarquee />
-        <section className="px-5 pt-9 pb-4 lg:mx-auto lg:max-w-[1280px] lg:px-20 lg:pt-12 lg:pb-6">
-          <TodayEvents />
-        </section>
+        <TodayEvents />
         <ThisMonthSection />
         <EventCategories />
         <LiveMusicWeekend />

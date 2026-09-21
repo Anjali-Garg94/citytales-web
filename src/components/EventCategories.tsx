@@ -32,7 +32,7 @@ export default async function EventCategories() {
   return (
     <section className="px-4 pt-9 pb-11 lg:mx-auto lg:max-w-[1280px] lg:px-10 lg:pt-12 lg:pb-14">
       <RevealItem inGroup={false}>
-        <div className="font-serif text-2xl font-medium lg:text-[32px]">
+        <div className="font-serif text-xl font-medium lg:text-[26px]">
           What are you in the mood for?
         </div>
       </RevealItem>

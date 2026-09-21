@@ -7,7 +7,6 @@ import { BUSY_THRESHOLD, type MonthEvent } from "@/lib/placeholder-month-data";
 import { ArrowRightIcon } from "../Icons";
 import RevealGroup from "../motion/RevealGroup";
 import RevealItem from "../motion/RevealItem";
-import RevealLines from "../motion/RevealLines";
 import { fadeUp, viewport } from "../motion/variants";
 import MonthEventCard from "./MonthEventCard";
 import MonthEventList from "./MonthEventList";
@@ -22,9 +21,9 @@ const THIS_WEEK_GRID_LIMIT = 6;
 
 function SectionLabel({ label, note }: { label: string; note?: string }) {
   return (
-    <RevealGroup stagger={0.08} className="text-center">
+    <RevealGroup stagger={0.08}>
       <RevealItem>
-        <h3 className="font-serif text-xl font-medium text-ink lg:text-2xl">
+        <h3 className="font-serif text-base font-medium text-ink lg:text-lg">
           {label}
         </h3>
       </RevealItem>
@@ -97,15 +96,13 @@ export default function ThisMonthSectionClient({
       id="whats-on"
       className="scroll-mt-4 pt-2 pb-10 lg:mx-auto lg:max-w-[1280px] lg:pt-4 lg:pb-16"
     >
-      {/* 1 — Month header. The page's headline moment, so it gets the masked
-          line reveal rather than the plain fade everything else uses. */}
+      {/* 1 — Month header */}
       <div className="px-5 lg:px-20">
-        <h2 className="font-serif text-2xl leading-[1.1] font-medium text-ink lg:text-[32px] lg:leading-[1.08]">
-          <RevealLines
-            className="block"
-            lines={["Your city", isBusy ? "is looking busy." : "is taking shape."]}
-          />
-        </h2>
+        <RevealItem inGroup={false}>
+          <h2 className="font-serif text-xl leading-[1.1] font-medium whitespace-nowrap text-ink lg:text-[26px] lg:leading-[1.08]">
+            Your city {isBusy ? "is looking busy." : "is taking shape."}
+          </h2>
+        </RevealItem>
       </div>
 
       {/* 2 — Category chips. Full-bleed so a half-chip signals swipe. */}
@@ -165,7 +162,9 @@ export default function ThisMonthSectionClient({
           {/* 3 — This week: the visual anchor */}
           {thisWeek.length > 0 && (
             <div className="mt-9 lg:mt-14">
-              <SectionLabel label="This Week" />
+              <div className="px-5 lg:px-20">
+                <SectionLabel label="This Week" />
+              </div>
 
               {/* Cards carry their own index so the two columns cascade
                   diagonally rather than row-by-row. */}
