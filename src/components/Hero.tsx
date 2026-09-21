@@ -26,8 +26,8 @@ const cards = [
       "left-[2%] top-[10%] h-[56%] w-[44%] z-[3] shadow-[0_16px_32px_-14px_rgba(30,26,22,0.24)] rounded-2xl lg:left-[2%] lg:top-[12%] lg:h-[58%] lg:w-[42%] lg:rounded-[18px] lg:shadow-[0_22px_42px_-16px_rgba(30,26,22,0.26)]",
   },
   {
-    src: "/images/hero/hero-dj-coffee.jpg",
-    alt: "Friends dancing with coffee by a DJ turntable",
+    src: "/images/hero/hero-star-smile.jpg",
+    alt: "Woman smiling with colorful star stickers on a yellow background",
     className:
       "left-[22%] bottom-0 h-[38%] w-[34%] z-[3] shadow-[0_18px_36px_-14px_rgba(30,26,22,0.26)] rounded-2xl lg:h-[40%] lg:w-[32%] lg:rounded-[18px] lg:shadow-[0_24px_46px_-16px_rgba(30,26,22,0.28)]",
   },
