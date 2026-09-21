@@ -283,6 +283,58 @@ export function monthShort(isoDate: string): string {
   }).format(d);
 }
 
+/** Today's calendar date in Asia/Kolkata as yyyy-mm-dd. */
+export function todayISO(): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Asia/Kolkata",
+  }).formatToParts(new Date());
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
+
+/**
+ * Date header parts: "Tomorrow / Mon", "22 Sep / Tue".
+ * Month and weekday are always 3-letter abbreviations.
+ */
+export function dateHeaderParts(isoDate: string): {
+  primary: string;
+  secondary: string;
+} {
+  const today = todayISO();
+  const tomorrowDate = new Date(`${today}T12:00:00+05:30`);
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrowParts = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Asia/Kolkata",
+  }).formatToParts(tomorrowDate);
+  const get = (t: string) =>
+    tomorrowParts.find((p) => p.type === t)?.value ?? "";
+  const tomorrow = `${get("year")}-${get("month")}-${get("day")}`;
+
+  const d = new Date(`${isoDate}T12:00:00+05:30`);
+  const parts = Number.isNaN(d.getTime())
+    ? []
+    : new Intl.DateTimeFormat("en-GB", {
+        day: "numeric",
+        month: "short",
+        weekday: "short",
+        timeZone: "Asia/Kolkata",
+      }).formatToParts(d);
+  const part = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  const weekday = part("weekday").slice(0, 3);
+  const month = part("month").slice(0, 3);
+  const day = part("day");
+
+  if (isoDate === today) return { primary: "Today", secondary: weekday };
+  if (isoDate === tomorrow) return { primary: "Tomorrow", secondary: weekday };
+  return { primary: `${day} ${month}`, secondary: weekday };
+}
+
 /** Groups events by date, preserving order, for the date-anchored list. */
 export function groupByDate(events: MonthEvent[]): [string, MonthEvent[]][] {
   const groups = new Map<string, MonthEvent[]>();

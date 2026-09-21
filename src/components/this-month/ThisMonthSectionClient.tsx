@@ -17,16 +17,16 @@ const ALL = "All";
 /** Rows shown per list before "See everything" takes over. */
 const LIST_LIMIT = 4;
 
-/** This week grid: fixed at 2 columns, capped at 4 rows (8 cards). */
-const THIS_WEEK_GRID_LIMIT = 8;
+/** This week grid: fixed at 2 columns, capped at 3 rows (6 cards). */
+const THIS_WEEK_GRID_LIMIT = 6;
 
 function SectionLabel({ label, note }: { label: string; note?: string }) {
   return (
-    <RevealGroup stagger={0.08}>
+    <RevealGroup stagger={0.08} className="text-center">
       <RevealItem>
-        <div className="text-[11px] font-semibold tracking-[0.14em] text-accent uppercase">
+        <h3 className="font-serif text-xl font-medium text-ink lg:text-2xl">
           {label}
-        </div>
+        </h3>
       </RevealItem>
       {note ? (
         <RevealItem className="mt-1.5">
@@ -165,25 +165,7 @@ export default function ThisMonthSectionClient({
           {/* 3 — This week: the visual anchor */}
           {thisWeek.length > 0 && (
             <div className="mt-9 lg:mt-14">
-              <RevealGroup
-                className="flex items-center justify-between px-5 lg:px-20"
-                stagger={0.08}
-              >
-                <RevealItem>
-                  <h3 className="font-serif text-[22px] font-bold text-ink lg:text-[28px]">
-                    This Week
-                  </h3>
-                </RevealItem>
-                <RevealItem>
-                  <Link
-                    href="/this-week"
-                    className="flex items-center gap-1 text-[13px] font-semibold text-accent no-underline hover:text-accent-deep"
-                  >
-                    See all
-                    <ArrowRightIcon className="h-3.5 w-3.5" />
-                  </Link>
-                </RevealItem>
-              </RevealGroup>
+              <SectionLabel label="This Week" />
 
               {/* Cards carry their own index so the two columns cascade
                   diagonally rather than row-by-row. */}
@@ -198,7 +180,7 @@ export default function ThisMonthSectionClient({
                   href="/this-week"
                   className="flex items-center justify-center gap-1.5 rounded-full border border-line py-3 text-[13px] font-semibold text-ink no-underline hover:border-ink"
                 >
-                  See all this weekend
+                  See all this Week
                   <ArrowRightIcon className="h-3.5 w-3.5" />
                 </Link>
               </RevealItem>
@@ -218,10 +200,7 @@ export default function ThisMonthSectionClient({
           {/* 5 — After next week: same treatment as Next week */}
           {later.length > 0 && (
             <div className="mt-10 px-5 lg:mt-16 lg:px-20">
-              <SectionLabel
-                label="Later this month"
-                note="The month isn't over yet."
-              />
+              <SectionLabel label="Later this month" />
               <MonthEventList events={later.slice(0, LIST_LIMIT)} />
               <SeeAllLink href="/this-week">Explore everything upcoming</SeeAllLink>
             </div>

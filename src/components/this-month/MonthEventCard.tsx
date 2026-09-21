@@ -4,38 +4,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { dayNumber, weekdayShort, type MonthEvent } from "@/lib/placeholder-month-data";
+import {
+  dayNumber,
+  monthShort,
+  weekdayShort,
+  type MonthEvent,
+} from "@/lib/placeholder-month-data";
+import { categoryBadgeColors } from "@/lib/category-badge";
 import { PinIcon } from "../Icons";
 import { fadeUp, viewport } from "../motion/variants";
 
-type BadgeColors = { bg: string; text: string };
-
-/** Category pill colors, keyed by the backend's uppercase category label. */
-const CATEGORY_BADGE_COLORS: Record<string, BadgeColors> = {
-  MUSIC: { bg: "#EDE7FB", text: "#6D4FC4" },
-  "LIVE SHOWS": { bg: "#DFF3E7", text: "#1F8A54" },
-  WORKSHOPS: { bg: "#FDE9D2", text: "#B9631A" },
-  "FOOD & DRINKS": { bg: "#FBE4E4", text: "#C23B3B" },
-  CLUB: { bg: "#E3EEFC", text: "#2563A6" },
-  EXHIBITION: { bg: "#FBE4E4", text: "#C23B3B" },
-  FESTIVE: { bg: "#FEF0C7", text: "#A16207" },
-  WELLNESS: { bg: "#E1F5F1", text: "#0F8A78" },
-  KIDS: { bg: "#FDE7F3", text: "#C23B86" },
-};
-
-const DEFAULT_BADGE: BadgeColors = {
-  bg: "var(--accent-tint)",
-  text: "var(--accent-deep)",
-};
-
-function badgeColors(category: string): BadgeColors {
-  return CATEGORY_BADGE_COLORS[category.toUpperCase()] ?? DEFAULT_BADGE;
-}
-
 /**
- * White photo-topped card for the "This week" grid — image up top with the
- * date and save controls, a colour-coded category pill straddling the
- * photo/card boundary, then title, venue and time on a plain white ground.
+ * White photo-topped card for the "This week" grid — taller image up top,
+ * colour-coded category pill straddling the photo/card boundary, then title,
+ * date, and venue on a plain white ground.
  *
  * `index` is the card's position in the grid and only drives the reveal
  * delay: `% 2` matches the two columns, so a row's pair arrives together and
@@ -50,8 +32,15 @@ export default function MonthEventCard({
   index?: number;
 }) {
   const [saved, setSaved] = useState(false);
-  const colors = badgeColors(event.category);
+  const colors = categoryBadgeColors(event.category);
   const delay = Math.min(Math.floor(index / 2), 3) * 0.08 + (index % 2) * 0.05;
+
+  const dateLabel = [
+    weekdayShort(event.date),
+    `${dayNumber(event.date)} ${monthShort(event.date)}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <motion.div
@@ -62,7 +51,7 @@ export default function MonthEventCard({
       variants={fadeUp(delay, 20)}
     >
       <Link href={`/events/${event.slug}`} className="group block no-underline">
-        <div className="relative aspect-[4/3] w-full overflow-hidden">
+        <div className="relative aspect-square w-full overflow-hidden">
           <Image
             src={event.image}
             alt=""
@@ -70,16 +59,6 @@ export default function MonthEventCard({
             sizes="(min-width: 1024px) 33vw, 50vw"
             className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
           />
-
-          {/* Date anchor */}
-          <div className="absolute top-2.5 left-2.5 rounded-[11px] bg-white/95 px-2 py-1.5 text-center lg:top-3 lg:left-3 lg:px-2.5">
-            <div className="font-serif text-[15px] leading-none font-semibold text-ink lg:text-[17px]">
-              {dayNumber(event.date)}
-            </div>
-            <div className="mt-[2px] text-[8px] leading-none font-semibold tracking-[0.1em] text-ink-soft lg:text-[8.5px]">
-              {weekdayShort(event.date)}
-            </div>
-          </div>
         </div>
 
         <div className="relative px-3.5 pt-5 pb-3.5 lg:px-4 lg:pt-6 lg:pb-4">
@@ -91,11 +70,18 @@ export default function MonthEventCard({
             {event.category}
           </span>
 
-          <div className="line-clamp-2 font-serif text-[15px] leading-[1.22] font-bold text-ink lg:text-[17px]">
+          <div className="line-clamp-2 text-[16px] leading-[1.25] font-semibold text-ink lg:text-[18px]">
             {event.title}
           </div>
 
-          <div className="mt-2 flex items-center gap-1.5 text-[11.5px] text-ink-soft lg:text-[12.5px]">
+          {dateLabel ? (
+            <div className="mt-1.5 text-[12px] text-ink-soft lg:text-[13px]">
+              {dateLabel}
+              {event.startTime ? ` · ${event.startTime}` : ""}
+            </div>
+          ) : null}
+
+          <div className="mt-1.5 flex items-center gap-1.5 text-[11.5px] text-ink-soft lg:text-[12.5px]">
             <PinIcon className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{event.venue}</span>
           </div>

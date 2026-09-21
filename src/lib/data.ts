@@ -22,6 +22,7 @@ export const organiserColumns: Organiser[][] = [
 ];
 
 export type TodayEvent = {
+  id?: string;
   time: string;
   image: string;
   category: string;

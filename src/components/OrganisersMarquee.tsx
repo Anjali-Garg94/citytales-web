@@ -23,11 +23,6 @@ export default async function OrganisersMarquee() {
             Organisers you love
           </div>
         </RevealItem>
-        <RevealItem className="mt-2 lg:mt-2.5">
-          <div className="max-w-[300px] text-[13px] leading-[1.55] text-ink-soft lg:max-w-[420px] lg:text-sm">
-            New experiences, new memories.
-          </div>
-        </RevealItem>
       </RevealGroup>
 
       {/* Black band behind the columns. Full-bleed on purpose: the row inside

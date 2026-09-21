@@ -201,10 +201,11 @@ export async function getTodayEvents(): Promise<TodayEvent[]> {
     }
 
     return content
-      .filter((e): e is ApiEvent => typeof e?.title === "string")
+      .filter((e): e is ApiEvent => typeof e?.title === "string" && typeof e?.id === "string")
       .map<TodayEvent>((e) => {
         const categoryId = e.categoryIds?.[0];
         return {
+          id: e.id,
           time: formatTime(e.dates?.[0]?.startTime),
           image: e.imageUrls?.coverUrlS3Path || "/images/events/hero-wide.jpg",
           category:
@@ -619,5 +620,181 @@ export async function getCities(): Promise<City[]> {
       error instanceof Error ? error.message : error,
     );
     return FALLBACK_CITIES;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Event detail — GET /api/v1/event/{id}
+ * ------------------------------------------------------------------ */
+
+export type EventBookingOption = {
+  id: string;
+  label: string;
+  value: string;
+};
+
+export type EventDetail = {
+  id: string;
+  title: string;
+  description: string;
+  coverImage: string;
+  gallery: string[];
+  /** e.g. "Wed, 23 Sep 2026 - 8:00 pm onwards" */
+  whenLabel: string;
+  /** Primary venue line, e.g. "SCO No. 11" */
+  venueLine: string;
+  /** City / secondary venue line */
+  city: string;
+  bookingOptions: EventBookingOption[];
+  hasSchedule: boolean;
+};
+
+type ApiEventDetail = {
+  id?: string;
+  title?: string;
+  description?: string | null;
+  venue?: {
+    address?: string | null;
+    city?: string | null;
+  } | null;
+  dates?: {
+    date?: string | null;
+    startTime?: string | null;
+    endTime?: string | null;
+  }[];
+  startDate?: string | null;
+  imageUrls?: {
+    coverUrlS3Path?: string | null;
+    eventImageOriginalUrlsS3Path?: string[] | null;
+  } | null;
+  bookingOptions?: {
+    id?: string;
+    label?: string | null;
+    value?: string | null;
+  }[] | null;
+};
+
+/** "20:00" -> "8:00 pm" (lowercase am/pm, matching the app detail screen) */
+function formatTimeLower(hhmm: string | null | undefined): string {
+  const raw = formatTime(hhmm);
+  if (!raw) return "";
+  return raw.replace(" AM", " am").replace(" PM", " pm");
+}
+
+/**
+ * "2026-09-23T14:30:00Z" + "20:00" -> "Wed, 23 Sep 2026 - 8:00 pm onwards"
+ *
+ * Prefers the clock from `dates[0].startTime` (organiser-entered local time)
+ * and the calendar day from `startDate` in Asia/Kolkata.
+ */
+function formatDetailWhen(
+  startDate: string | null | undefined,
+  startTime: string | null | undefined,
+  endTime: string | null | undefined,
+): string {
+  const d = startDate ? new Date(startDate) : null;
+  const datePart =
+    d && !Number.isNaN(d.getTime())
+      ? (() => {
+          const parts = new Intl.DateTimeFormat("en-GB", {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            timeZone: "Asia/Kolkata",
+          }).formatToParts(d);
+          const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+          return `${get("weekday")}, ${get("day")} ${get("month")} ${get("year")}`;
+        })()
+      : "";
+
+  const start = formatTimeLower(startTime);
+  if (!datePart && !start) return "";
+
+  let timePart = "";
+  if (start) {
+    const end = formatTimeLower(endTime);
+    timePart = end ? `${start} – ${end}` : `${start} onwards`;
+  }
+
+  if (datePart && timePart) return `${datePart} - ${timePart}`;
+  return datePart || timePart;
+}
+
+/**
+ * Fetches a single event for the detail page.
+ * Returns null on 404 / network failure so the page can show a not-found state.
+ */
+export async function getEventById(id: string): Promise<EventDetail | null> {
+  if (!id) return null;
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/event/${encodeURIComponent(id)}`, {
+      // Detail changes less often than the "today" rail, but still refresh often.
+      next: { revalidate: 300 },
+    });
+
+    if (res.status === 404) return null;
+
+    if (!res.ok) {
+      console.error(
+        `[event:${id}] API responded ${res.status} ${res.statusText}`,
+      );
+      return null;
+    }
+
+    const json = (await res.json()) as ApiEventDetail;
+    if (typeof json?.id !== "string" || typeof json?.title !== "string") {
+      console.error(`[event:${id}] Unexpected response shape`);
+      return null;
+    }
+
+    const cover =
+      json.imageUrls?.coverUrlS3Path || "/images/events/hero-wide.jpg";
+    const galleryRaw = json.imageUrls?.eventImageOriginalUrlsS3Path ?? [];
+    const gallery = [
+      cover,
+      ...galleryRaw.filter(
+        (u): u is string => typeof u === "string" && u.length > 0 && u !== cover,
+      ),
+    ];
+
+    const firstDate = json.dates?.[0];
+    const bookingOptions = (json.bookingOptions ?? [])
+      .filter(
+        (o): o is { id: string; label: string; value: string } =>
+          typeof o?.id === "string" &&
+          typeof o?.label === "string" &&
+          typeof o?.value === "string" &&
+          o.value.trim().length > 0,
+      )
+      .map((o) => ({
+        id: o.id,
+        label: o.label.trim(),
+        value: o.value.trim(),
+      }));
+
+    return {
+      id: json.id,
+      title: json.title.trim(),
+      description: (json.description ?? "").trim(),
+      coverImage: cover,
+      gallery,
+      whenLabel: formatDetailWhen(
+        json.startDate ?? firstDate?.date,
+        firstDate?.startTime,
+        firstDate?.endTime,
+      ),
+      venueLine: shortVenue(json.venue?.address, json.venue?.city),
+      city: json.venue?.city?.trim() || "",
+      bookingOptions,
+      hasSchedule: (json.dates?.length ?? 0) > 1,
+    };
+  } catch (error) {
+    console.error(
+      `[event:${id}] Fetch failed:`,
+      error instanceof Error ? error.message : error,
+    );
+    return null;
   }
 }
