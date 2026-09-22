@@ -2,12 +2,11 @@ import { getMusicPartiesEvents } from "@/lib/api";
 import LiveMusicWeekendClient from "./LiveMusicWeekendClient";
 
 /**
- * The one dark band on an otherwise light page — the night-out section gets a
- * black ground so it reads as a mood shift rather than another white block.
+ * Homepage Live Music & Parties section — dark hero + event list matching
+ * the app mockup. Full browse lives at /live-music.
  *
- * Server wrapper: fetches the This weekend (THIS_WEEK) and All (ALL) tabs in
- * parallel, both filtered to the Music & Parties category, and hands them to
- * the client component, which owns the tab toggle.
+ * Server wrapper: fetches This weekend + All in parallel, filtered to Music
+ * & Parties, and hands them to the client for the tab toggle.
  */
 export default async function LiveMusicWeekend() {
   const [thisWeekend, all] = await Promise.all([

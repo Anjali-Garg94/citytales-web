@@ -51,10 +51,9 @@ export default function EventCategoriesGrid({
                 className="object-cover transition-transform duration-700 group-hover:scale-[1.06]"
               />
             </RevealImage>
-            <div className="absolute inset-0 bg-linear-to-t from-[rgba(14,11,10,0.82)] from-4% via-[rgba(14,11,10,0.28)] via-42% to-transparent" />
 
-            <div className="absolute right-0 bottom-0 left-0 p-3.5 lg:p-4">
-              <div className="font-serif text-[16px] leading-[1.15] font-semibold text-white lg:text-[18px]">
+            <div className="absolute right-0 bottom-0 left-0 px-3.5 pt-3.5 pb-2 lg:px-4 lg:pb-2.5">
+              <div className="font-serif text-[16px] leading-[1.15] font-semibold text-ink lg:text-[18px]">
                 {tile.name}
               </div>
             </div>

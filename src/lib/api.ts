@@ -422,6 +422,29 @@ function formatTimeRange(start: string, end: string): string {
   return end ? `${start} – ${end}` : `${start} – Late`;
 }
 
+/** Split an ISO instant into SAT / 23 / SEP for the Live Music list cards. */
+function formatMusicDateParts(iso: string | null | undefined): {
+  weekday: string;
+  day: string;
+  month: string;
+} {
+  if (!iso) return { weekday: "", day: "", month: "" };
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return { weekday: "", day: "", month: "" };
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    timeZone: "Asia/Kolkata",
+  }).formatToParts(d);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return {
+    weekday: get("weekday").slice(0, 3).toUpperCase(),
+    day: get("day"),
+    month: get("month").slice(0, 3).toUpperCase(),
+  };
+}
+
 /**
  * Fetches the Live music & parties carousel for a tab — THIS_WEEK for
  * "This weekend", ALL for "All" — filtered server-side to the Music &
@@ -468,15 +491,21 @@ export async function getMusicPartiesEvents(
         const firstDate = e.dates?.[0];
         const startTime = formatTime(firstDate?.startTime);
         const endTime = formatTime(firstDate?.endTime);
+        const iso = e.startDate ?? firstDate?.date;
+        const dateParts = formatMusicDateParts(iso);
         return {
           id: e.id,
           slug: e.id,
           title: e.title.trim(),
-          dateLabel: formatEventDate(e.startDate ?? firstDate?.date),
+          dateLabel: formatEventDate(iso),
           timeLabel: formatTimeRange(startTime, endTime),
           venue: shortVenue(e.venue?.address, e.venue?.city),
+          city: e.venue?.city?.trim() || "",
           category: (categoryId && categoryNames.get(categoryId)) || "MUSIC",
           image: e.imageUrls?.coverUrlS3Path || "/images/hero/hero-party-real.jpg",
+          weekday: dateParts.weekday,
+          day: dateParts.day,
+          month: dateParts.month,
         };
       });
   } catch (error) {
@@ -507,13 +536,13 @@ export type EventCategory = {
  * they point at local placeholder imagery rather than inventing listings.
  */
 const FALLBACK_EVENT_CATEGORIES: EventCategory[] = [
-  { id: "f-club", name: "Community Clubs", label: "Club", imageUrl: "/images/events/cat-clubs.jpg" },
-  { id: "f-exhibition", name: "Exhibition", label: "Exhibition", imageUrl: "/images/events/cat-exhibitions.jpg" },
-  { id: "f-festive", name: "Festive", label: "Festive", imageUrl: "/images/events/hero-wide.jpg" },
-  { id: "f-wellness", name: "Health & Wellness", label: "Wellness", imageUrl: "/images/events/grid-g.jpg" },
-  { id: "f-kids", name: "Kids", label: "Kids", imageUrl: "/images/events/cat-activities.jpg" },
-  { id: "f-live", name: "Live Shows", label: "Live Shows", imageUrl: "/images/events/port-mic.jpg" },
-  { id: "f-music", name: "Music & Parties", label: "Music", imageUrl: "/images/events/feat-dusk.jpg" },
+  { id: "f-club", name: "Community Clubs", label: "Club", imageUrl: "/images/events/cat-community-clubs-v2.jpg" },
+  { id: "f-exhibition", name: "Exhibition", label: "Exhibition", imageUrl: "/images/events/cat-exhibition-bust.jpg" },
+  { id: "f-festive", name: "Festive", label: "Festive", imageUrl: "/images/events/cat-festive-diya.jpg" },
+  { id: "f-wellness", name: "Health & Wellness", label: "Wellness", imageUrl: "/images/events/cat-wellness-yoga.jpg" },
+  { id: "f-kids", name: "Kids", label: "Kids", imageUrl: "/images/events/cat-kids-train.jpg" },
+  { id: "f-live", name: "Live Shows", label: "Live Shows", imageUrl: "/images/events/cat-live-shows-mic.jpg" },
+  { id: "f-music", name: "Music & Parties", label: "Music", imageUrl: "/images/events/cat-music-disco.jpg" },
   { id: "f-workshops", name: "Social Activities", label: "Workshops", imageUrl: "/images/events/grid-d.jpg" },
 ];
 
@@ -633,6 +662,16 @@ export type EventBookingOption = {
   value: string;
 };
 
+/** One date row for the Date & time / schedule sheet. */
+export type EventScheduleItem = {
+  /** e.g. "Wed, 23 Sep 2026" */
+  dateLabel: string;
+  /** e.g. "8:00 pm onwards" */
+  timeLabel: string;
+  /** Combined line for lists */
+  fullLabel: string;
+};
+
 export type EventDetail = {
   id: string;
   title: string;
@@ -645,7 +684,14 @@ export type EventDetail = {
   venueLine: string;
   /** City / secondary venue line */
   city: string;
+  /** Full address string for the venue sheet */
+  venueAddress: string;
+  venueFurtherInstructions: string;
+  /** Event's city id when present; falls back to launch CITY_ID for save calls */
+  cityId: string;
   bookingOptions: EventBookingOption[];
+  /** All dates for the schedule bottom sheet */
+  schedule: EventScheduleItem[];
   hasSchedule: boolean;
 };
 
@@ -653,9 +699,12 @@ type ApiEventDetail = {
   id?: string;
   title?: string;
   description?: string | null;
+  cityId?: string | null;
   venue?: {
     address?: string | null;
+    addressLine2?: string | null;
     city?: string | null;
+    furtherInstructions?: string | null;
   } | null;
   dates?: {
     date?: string | null;
@@ -692,33 +741,43 @@ function formatDetailWhen(
   startTime: string | null | undefined,
   endTime: string | null | undefined,
 ): string {
-  const d = startDate ? new Date(startDate) : null;
-  const datePart =
-    d && !Number.isNaN(d.getTime())
-      ? (() => {
-          const parts = new Intl.DateTimeFormat("en-GB", {
-            weekday: "short",
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-            timeZone: "Asia/Kolkata",
-          }).formatToParts(d);
-          const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
-          return `${get("weekday")}, ${get("day")} ${get("month")} ${get("year")}`;
-        })()
-      : "";
+  const item = formatScheduleItem(startDate, startTime, endTime);
+  return item?.fullLabel ?? "";
+}
 
+function formatDateLabel(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  }).formatToParts(d);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${get("weekday")}, ${get("day")} ${get("month")} ${get("year")}`;
+}
+
+function formatScheduleItem(
+  startDate: string | null | undefined,
+  startTime: string | null | undefined,
+  endTime: string | null | undefined,
+): EventScheduleItem | null {
+  const dateLabel = formatDateLabel(startDate);
   const start = formatTimeLower(startTime);
-  if (!datePart && !start) return "";
-
-  let timePart = "";
+  let timeLabel = "";
   if (start) {
     const end = formatTimeLower(endTime);
-    timePart = end ? `${start} – ${end}` : `${start} onwards`;
+    timeLabel = end ? `${start} – ${end}` : `${start} onwards`;
   }
-
-  if (datePart && timePart) return `${datePart} - ${timePart}`;
-  return datePart || timePart;
+  if (!dateLabel && !timeLabel) return null;
+  const fullLabel =
+    dateLabel && timeLabel
+      ? `${dateLabel} - ${timeLabel}`
+      : dateLabel || timeLabel;
+  return { dateLabel, timeLabel, fullLabel };
 }
 
 /**
@@ -774,6 +833,35 @@ export async function getEventById(id: string): Promise<EventDetail | null> {
         value: o.value.trim(),
       }));
 
+    const schedule = (json.dates ?? [])
+      .map((d) =>
+        formatScheduleItem(
+          // Prefer the date field; fall back to startDate for single-date events
+          // that only populate the top-level instant.
+          d.date ?? json.startDate,
+          d.startTime,
+          d.endTime,
+        ),
+      )
+      .filter((d): d is EventScheduleItem => d !== null);
+
+    // If dates[] was empty but startDate exists, still show one row.
+    if (schedule.length === 0) {
+      const lone = formatScheduleItem(
+        json.startDate,
+        firstDate?.startTime,
+        firstDate?.endTime,
+      );
+      if (lone) schedule.push(lone);
+    }
+
+    const venueAddress = [
+      json.venue?.address?.trim(),
+      json.venue?.addressLine2?.trim(),
+    ]
+      .filter(Boolean)
+      .join(", ");
+
     return {
       id: json.id,
       title: json.title.trim(),
@@ -787,8 +875,13 @@ export async function getEventById(id: string): Promise<EventDetail | null> {
       ),
       venueLine: shortVenue(json.venue?.address, json.venue?.city),
       city: json.venue?.city?.trim() || "",
+      venueAddress,
+      venueFurtherInstructions:
+        json.venue?.furtherInstructions?.trim() || "",
+      cityId: json.cityId?.trim() || CITY_ID,
       bookingOptions,
-      hasSchedule: (json.dates?.length ?? 0) > 1,
+      schedule,
+      hasSchedule: schedule.length > 1,
     };
   } catch (error) {
     console.error(

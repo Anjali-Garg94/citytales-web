@@ -369,8 +369,14 @@ export type WeekendEvent = {
   /** e.g. "8:00 PM – Late" */
   timeLabel: string;
   venue: string;
+  /** City name when available — appended on the Live Music list cards */
+  city?: string;
   category: string;
   image: string;
+  /** Split date parts for the Live Music & Parties list cards */
+  weekday?: string;
+  day?: string;
+  month?: string;
 };
 
 /**

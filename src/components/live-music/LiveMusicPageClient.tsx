@@ -3,11 +3,8 @@
 import type { WeekendEvent } from "@/lib/placeholder-month-data";
 import LiveMusicSection from "@/components/live-music/LiveMusicSection";
 
-/**
- * Landing-page Live Music block — same dark design as /live-music, without
- * back/search chrome. Caps the list and links through to the full page.
- */
-export default function LiveMusicWeekendClient({
+/** Standalone /live-music screen — includes back + search in the hero. */
+export default function LiveMusicPageClient({
   thisWeekend,
   all,
 }: {
@@ -18,7 +15,7 @@ export default function LiveMusicWeekendClient({
     <LiveMusicSection
       thisWeekend={thisWeekend}
       all={all}
-      variant="home"
+      variant="page"
     />
   );
 }

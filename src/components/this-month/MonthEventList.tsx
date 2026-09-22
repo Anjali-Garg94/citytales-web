@@ -88,27 +88,27 @@ export default function MonthEventList({ events }: { events: MonthEvent[] }) {
 
                     <div className="min-w-0 flex-1 pt-0.5">
                       {/* 1 — name */}
-                      <div className="line-clamp-2 text-[16px] leading-[1.25] font-semibold text-ink lg:text-[18px]">
+                      <div className="line-clamp-2 text-[15px] leading-[1.25] font-bold text-ink lg:text-[17px]">
                         {event.title}
                       </div>
 
                       {/* 2 — time + category */}
-                      <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-[13px] text-ink-soft lg:mt-2 lg:text-[14px]">
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-[12px] text-ink-soft lg:text-[13px]">
                         {time ? (
                           <span className="inline-flex items-center gap-1.5">
-                            <ClockIcon className="h-3.5 w-3.5 shrink-0 lg:h-4 lg:w-4" />
+                            <ClockIcon className="h-3.5 w-3.5 shrink-0" />
                             {time}
                           </span>
                         ) : null}
-                        <span className="rounded-full bg-accent-tint px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] text-accent-deep uppercase lg:text-[10.5px]">
+                        <span className="rounded-full bg-accent-tint px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] text-accent-deep uppercase">
                           {event.category}
                         </span>
                       </div>
 
                       {/* 3 — venue */}
                       {event.venue ? (
-                        <div className="mt-1.5 flex min-w-0 items-center gap-1.5 text-[13px] text-ink-soft lg:mt-2 lg:text-[14px]">
-                          <PinIcon className="h-3.5 w-3.5 shrink-0 lg:h-4 lg:w-4" />
+                        <div className="mt-1.5 flex min-w-0 items-center gap-1.5 text-[12px] text-ink-soft lg:text-[13px]">
+                          <PinIcon className="h-3.5 w-3.5 shrink-0" />
                           <span className="truncate">{event.venue}</span>
                         </div>
                       ) : null}

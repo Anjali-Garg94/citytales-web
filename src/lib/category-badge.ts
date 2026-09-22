@@ -27,3 +27,27 @@ const DEFAULT_BADGE: BadgeColors = {
 export function categoryBadgeColors(category: string): BadgeColors {
   return CATEGORY_BADGE_COLORS[category.toUpperCase()] ?? DEFAULT_BADGE;
 }
+
+/** Stronger saturated pills for dark Live Music screens (white label text). */
+const DARK_CATEGORY_BADGE_COLORS: Record<string, BadgeColors> = {
+  MUSIC: { bg: "#7C5CFC", text: "#FFFFFF" },
+  "LIVE SHOWS": { bg: "#E11D48", text: "#FFFFFF" },
+  "LIVE MUSIC": { bg: "#E11D48", text: "#FFFFFF" },
+  "DJ PARTY": { bg: "#7C5CFC", text: "#FFFFFF" },
+  "CLUB NIGHT": { bg: "#2563EB", text: "#FFFFFF" },
+  "LIVE BAND": { bg: "#16A34A", text: "#FFFFFF" },
+  CLUB: { bg: "#2563EB", text: "#FFFFFF" },
+  CLUBS: { bg: "#2563EB", text: "#FFFFFF" },
+  FESTIVE: { bg: "#D97706", text: "#FFFFFF" },
+};
+
+const DEFAULT_DARK_BADGE: BadgeColors = {
+  bg: "#7C5CFC",
+  text: "#FFFFFF",
+};
+
+export function darkCategoryBadgeColors(category: string): BadgeColors {
+  return (
+    DARK_CATEGORY_BADGE_COLORS[category.toUpperCase()] ?? DEFAULT_DARK_BADGE
+  );
+}
