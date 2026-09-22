@@ -34,11 +34,19 @@ function ChevronDownIcon({ className = "" }: { className?: string }) {
   );
 }
 
-function LiveMusicCard({ event }: { event: WeekendEvent }) {
+function LiveMusicCard({
+  event,
+  showCategory = true,
+}: {
+  event: WeekendEvent;
+  showCategory?: boolean;
+}) {
   const { user, openAuthModal } = useAuth();
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const colors = darkCategoryBadgeColors(event.category);
+  const colors = showCategory
+    ? darkCategoryBadgeColors(event.category)
+    : null;
   const venueLine = [event.venue, event.city].filter(Boolean).join(", ");
 
   const toggleSave = useCallback(
@@ -81,7 +89,7 @@ function LiveMusicCard({ event }: { event: WeekendEvent }) {
   return (
     <Link
       href={`/events/${event.slug}`}
-      className="relative flex gap-3.5 rounded-[18px] border border-white/10 bg-white/[0.06] p-3 no-underline backdrop-blur-sm transition hover:bg-white/[0.1] lg:gap-5 lg:rounded-[20px] lg:p-4"
+      className="relative flex gap-3.5 rounded-[18px] border border-white/10 bg-black/55 p-3 no-underline backdrop-blur-sm transition hover:bg-black/65 lg:gap-5 lg:rounded-[20px] lg:p-4"
     >
       <div className="flex w-10 shrink-0 flex-col items-center justify-center text-center lg:w-12">
         <div className="text-[10px] font-semibold tracking-[0.08em] text-white/55 uppercase lg:text-[11px]">
@@ -106,13 +114,19 @@ function LiveMusicCard({ event }: { event: WeekendEvent }) {
       </div>
 
       <div className="min-w-0 flex-1 pr-7">
-        <span
-          className="inline-block rounded-full px-2 py-0.5 text-[9px] font-bold tracking-[0.06em] uppercase"
-          style={{ backgroundColor: colors.bg, color: colors.text }}
+        {showCategory && colors ? (
+          <span
+            className="inline-block rounded-full px-2 py-0.5 text-[9px] font-bold tracking-[0.06em] uppercase"
+            style={{ backgroundColor: colors.bg, color: colors.text }}
+          >
+            {event.category}
+          </span>
+        ) : null}
+        <div
+          className={`line-clamp-2 text-[15px] leading-[1.25] font-bold text-white lg:text-[17px] ${
+            showCategory ? "mt-1.5" : ""
+          }`}
         >
-          {event.category}
-        </span>
-        <div className="mt-1.5 line-clamp-2 text-[15px] leading-[1.25] font-bold text-white lg:text-[17px]">
           {event.title}
         </div>
         {event.timeLabel ? (
@@ -189,7 +203,7 @@ export default function LiveMusicSection({
       {/* Full-section stage lights — no solid black fill */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <Image
-          src="/images/live-music/hero-stage-lights-v2.jpg"
+          src="/images/live-music/hero-stage-lights-v3.jpg"
           alt=""
           fill
           priority={isPage}
@@ -227,11 +241,11 @@ export default function LiveMusicSection({
 
           <div className={isPage ? "mt-10 lg:mt-14" : ""}>
             {isPage ? (
-              <h1 className="text-[32px] leading-[1.1] font-bold tracking-[-0.02em] text-white lg:text-[40px]">
+              <h1 className="text-[18px] leading-[1.1] font-bold tracking-[-0.02em] text-white lg:text-[22px]">
                 Live Music &amp; Parties
               </h1>
             ) : (
-              <h2 className="text-[28px] leading-[1.1] font-bold tracking-[-0.02em] text-white lg:text-[36px]">
+              <h2 className="text-[18px] leading-[1.1] font-bold tracking-[-0.02em] text-white lg:text-[22px]">
                 Live Music &amp; Parties
               </h2>
             )}
@@ -276,7 +290,11 @@ export default function LiveMusicSection({
         ) : (
           <div className="flex flex-col gap-3 lg:gap-3.5">
             {events.map((event) => (
-              <LiveMusicCard key={event.id} event={event} />
+              <LiveMusicCard
+                key={event.id}
+                event={event}
+                showCategory={isPage}
+              />
             ))}
           </div>
         )}

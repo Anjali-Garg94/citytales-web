@@ -52,8 +52,8 @@ export default function EventCategoriesGrid({
               />
             </RevealImage>
 
-            <div className="absolute right-0 bottom-0 left-0 px-3.5 pt-3.5 pb-2 lg:px-4 lg:pb-2.5">
-              <div className="font-serif text-[16px] leading-[1.15] font-semibold text-ink lg:text-[18px]">
+            <div className="absolute top-0 right-0 left-0 px-3.5 pt-2.5 pb-3.5 lg:px-4 lg:pt-3">
+              <div className="font-serif text-[18px] leading-[1.15] font-semibold text-ink lg:text-[20px]">
                 {tile.name}
               </div>
             </div>

@@ -25,7 +25,7 @@ export default function EverythingOnMarquee() {
         stagger={0.08}
       >
         <RevealItem>
-          <div className="font-serif text-xl font-medium lg:text-[26px]">
+          <div className="font-serif text-lg font-medium lg:text-[22px]">
             Everything on
           </div>
         </RevealItem>

@@ -17,7 +17,7 @@ export default async function TodayEvents() {
       className="px-5 pt-9 pb-4 lg:mx-auto lg:max-w-[1280px] lg:px-20 lg:pt-12 lg:pb-6"
     >
       <RevealItem inGroup={false}>
-        <div className="font-serif text-xl font-medium lg:text-[26px]">
+        <div className="font-serif text-lg font-medium lg:text-[22px]">
           Happening Today
         </div>
       </RevealItem>

@@ -99,7 +99,7 @@ export default function ThisMonthSectionClient({
       {/* 1 — Month header */}
       <div className="px-5 lg:px-20">
         <RevealItem inGroup={false}>
-          <h2 className="font-serif text-xl leading-[1.1] font-medium whitespace-nowrap text-ink lg:text-[26px] lg:leading-[1.08]">
+          <h2 className="font-serif text-lg leading-[1.1] font-medium whitespace-nowrap text-ink lg:text-[22px] lg:leading-[1.08]">
             Your city {isBusy ? "is looking busy." : "is taking shape."}
           </h2>
         </RevealItem>
