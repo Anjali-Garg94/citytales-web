@@ -78,11 +78,36 @@ async function post<T>(
 /**
  * POST /auth/sendOtp — returns HTTP 200 even when it fails to send; the
  * `status` field is the only thing that says whether an SMS actually went
- * out. On the current dev configuration, `message` also contains the OTP
- * itself ("Your valid otp is 123456") — never forward that to the client.
+ * out. Never forward `message` to the client — it may embed the OTP.
  */
 export function sendOtp(phone: string): Promise<SendOtpResponse> {
   return post<SendOtpResponse>("/auth/sendOtp", { phone });
+}
+
+/**
+ * Normalize phone to the same shape the mobile app sends:
+ * `+91-XXXXXXXXXX` (hyphen after country code). The SMS gateway on this
+ * backend is keyed to that format — bare `+91XXXXXXXXXX` skips real delivery
+ * and only echos the OTP in the JSON message.
+ */
+export function normalizeAuthPhone(raw: string): string {
+  const trimmed = raw.trim().replace(/[\s()]/g, "");
+  // Already app-shaped: +91-10digits
+  if (/^\+91-\d{10}$/.test(trimmed)) return trimmed;
+
+  const digits = trimmed.replace(/\D/g, "");
+  // 91XXXXXXXXXX (12 digits) or bare 10-digit Indian mobile
+  if (/^91[6-9]\d{9}$/.test(digits)) {
+    return `+91-${digits.slice(2)}`;
+  }
+  if (/^[6-9]\d{9}$/.test(digits)) {
+    return `+91-${digits}`;
+  }
+  // Other E.164 — keep + and digits, no forced hyphen
+  if (trimmed.startsWith("+") && digits.length >= 8) {
+    return `+${digits}`;
+  }
+  return trimmed;
 }
 
 /**

@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
 import type { City } from "@/lib/api";
 
 /** Mirrors AuthUser from auth-api.ts — kept separate so client code never imports a server-only module. */
@@ -23,16 +24,15 @@ export type SessionUser = {
   verifiedBy: string;
 };
 
-type AuthModalMode = "login" | "signup" | null;
-
 type AuthContextValue = {
   user: SessionUser | null;
   /** True until the initial /api/auth/me check resolves. */
   loading: boolean;
-  isAuthModalOpen: boolean;
-  authModalMode: AuthModalMode;
+  /**
+   * Navigate to /login or /signup (replaces the old modal).
+   * Kept name-stable for call sites that already use openAuthModal("login").
+   */
   openAuthModal: (mode?: "login" | "signup") => void;
-  closeAuthModal: () => void;
   refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: SessionUser | null) => void;
@@ -49,9 +49,9 @@ export function AuthProvider({
   children: ReactNode;
   cities: City[];
 }) {
+  const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [authModalMode, setAuthModalMode] = useState<AuthModalMode>(null);
 
   const refreshUser = useCallback(async () => {
     try {
@@ -67,10 +67,6 @@ export function AuthProvider({
     }
   }, []);
 
-  // Inlined rather than calling refreshUser() — the compiler's
-  // set-state-in-effect check traces through named callbacks and flags an
-  // effect that (indirectly) calls setState; an inline fetch avoids that
-  // while doing the exact same thing on mount.
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -101,26 +97,24 @@ export function AuthProvider({
     }
   }, []);
 
-  const openAuthModal = useCallback((mode: "login" | "signup" = "login") => {
-    setAuthModalMode(mode);
-  }, []);
-
-  const closeAuthModal = useCallback(() => setAuthModalMode(null), []);
+  const openAuthModal = useCallback(
+    (mode: "login" | "signup" = "login") => {
+      router.push(mode === "signup" ? "/signup" : "/login");
+    },
+    [router],
+  );
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
       loading,
-      isAuthModalOpen: authModalMode !== null,
-      authModalMode,
       openAuthModal,
-      closeAuthModal,
       refreshUser,
       logout,
       setUser,
       cities,
     }),
-    [user, loading, authModalMode, openAuthModal, closeAuthModal, refreshUser, logout, cities],
+    [user, loading, openAuthModal, refreshUser, logout, cities],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

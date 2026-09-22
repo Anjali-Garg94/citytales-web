@@ -1,6 +1,6 @@
 import Link from "next/link";
 import HeaderMobileMenu from "./HeaderMobileMenu";
-import { SearchIcon } from "./Icons";
+import HeaderSearch from "./search/HeaderSearch";
 import { navLinks } from "@/lib/data";
 
 export default function Header() {
@@ -29,13 +29,13 @@ export default function Header() {
 
       {/* Mobile: search + hamburger */}
       <div className="flex items-center gap-4 lg:hidden">
-        <SearchIcon className="h-5 w-5 text-ink" />
+        <HeaderSearch iconClassName="h-5 w-5 text-ink" />
         <HeaderMobileMenu />
       </div>
 
       {/* Desktop: search + CTA */}
       <div className="hidden items-center gap-[22px] lg:flex">
-        <SearchIcon className="h-[19px] w-[19px] text-ink" />
+        <HeaderSearch iconClassName="h-[19px] w-[19px] text-ink" />
         <Link
           href="/get-the-app"
           className="border border-ink px-5 py-[9px] text-[12.5px] font-semibold tracking-[0.03em] text-ink no-underline hover:bg-ink hover:text-bg"

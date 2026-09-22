@@ -29,7 +29,7 @@ const cards = [
     src: "/images/hero/hero-star-smile.jpg",
     alt: "Woman smiling with colorful star stickers on a yellow background",
     className:
-      "left-[22%] bottom-0 h-[38%] w-[34%] z-[3] shadow-[0_18px_36px_-14px_rgba(30,26,22,0.26)] rounded-2xl lg:h-[40%] lg:w-[32%] lg:rounded-[18px] lg:shadow-[0_24px_46px_-16px_rgba(30,26,22,0.28)]",
+      "left-[18%] bottom-0 h-[46%] w-[40%] z-[3] shadow-[0_18px_36px_-14px_rgba(30,26,22,0.26)] rounded-2xl lg:left-[18%] lg:h-[50%] lg:w-[38%] lg:rounded-[18px] lg:shadow-[0_24px_46px_-16px_rgba(30,26,22,0.28)]",
   },
   {
     src: "/images/hero/hero-kids-pool.jpg",

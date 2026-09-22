@@ -1,11 +1,11 @@
 import Link from "next/link";
 import PageShell from "@/components/PageShell";
+import { EventsPageSearch } from "@/components/search/HeaderSearch";
 import { getEventCategories } from "@/lib/api";
 
 /**
- * Category browse landing. Currently a placeholder that confirms the chosen
- * category — swap the body for a real listing once an events-by-category
- * endpoint exists.
+ * Category browse landing with Typesense-backed event search
+ * (mirrors the app EventTab search).
  */
 export default async function EventsPage({
   searchParams,
@@ -16,18 +16,19 @@ export default async function EventsPage({
 
   return (
     <PageShell>
-      <section className="px-5 py-16 lg:mx-auto lg:max-w-[1280px] lg:px-20 lg:py-24">
-        <div className="text-[11px] font-semibold tracking-[0.14em] text-accent uppercase">
+      <section className="px-5 py-10 lg:mx-auto lg:max-w-[1280px] lg:px-20 lg:py-16">
+        <div className="sticky top-0 z-20 -mx-5 bg-bg/95 px-5 py-3 backdrop-blur-md lg:-mx-20 lg:px-20">
+          <EventsPageSearch />
+        </div>
+
+        <div className="mt-6 text-[11px] font-semibold tracking-[0.14em] text-accent uppercase">
           {selected ? selected : "Browse"}
         </div>
         <h1 className="mt-4 max-w-[560px] font-serif text-[32px] leading-[1.15] font-semibold text-ink lg:text-[44px]">
-          {selected
-            ? `${selected} events`
-            : "Browse events"}
+          {selected ? `${selected} events` : "Browse events"}
         </h1>
         <p className="mt-4 max-w-[440px] text-sm leading-[1.6] text-ink-soft lg:text-base">
-          Listings for this section are on their way. In the meantime, pick
-          another mood below.
+          Search above, or pick a mood below.
         </p>
 
         <div className="mt-10 flex flex-wrap gap-2.5">

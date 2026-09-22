@@ -19,7 +19,7 @@ export default async function OrganisersMarquee() {
     <section className="overflow-hidden">
       <RevealGroup className="px-5 pt-9 pb-[22px] lg:mx-auto lg:max-w-[1280px] lg:px-20 lg:pt-12 lg:pb-7">
         <RevealItem>
-          <div className="font-serif text-lg font-medium leading-[1.15] lg:text-[22px]">
+          <div className="font-serif text-xl font-medium leading-[1.15] lg:text-[26px]">
             Organisers you love
           </div>
         </RevealItem>
@@ -95,10 +95,30 @@ export default async function OrganisersMarquee() {
       >
         <a
           href="/for-organisers"
-          className="flex w-fit items-center gap-2 rounded-full bg-accent px-6 py-2 text-[14px] font-semibold tracking-[0.01em] text-white no-underline transition hover:gap-3 hover:brightness-110 lg:px-7 lg:py-2.5 lg:text-[15px]"
+          className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full px-7 py-3 text-[14px] font-semibold tracking-[0.01em] text-white no-underline shadow-none transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.96] hover:scale-[1.02] lg:px-8 lg:py-3.5 lg:text-[15px]"
         >
-          Become an organiser
-          <ArrowRightIcon className="h-4 w-4" />
+          {/* Liquid glass fill — tinted so it reads on light page bg */}
+          <span
+            aria-hidden
+            className="absolute inset-0 rounded-full bg-accent/85 backdrop-blur-xl backdrop-saturate-150"
+          />
+          {/* Specular top highlight */}
+          <span
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/40 to-transparent"
+          />
+          {/* Soft rim light */}
+          <span
+            aria-hidden
+            className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]"
+          />
+          {/* Fluid sheen on hover */}
+          <span
+            aria-hidden
+            className="absolute inset-0 -translate-x-full rounded-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
+          />
+          <span className="relative z-10">Become an organiser</span>
+          <ArrowRightIcon className="relative z-10 h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
         </a>
       </RevealItem>
     </section>

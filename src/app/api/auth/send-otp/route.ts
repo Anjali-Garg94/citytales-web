@@ -1,10 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { sendOtp } from "@/lib/auth-api";
+import {
+  normalizeAuthPhone,
+  sendOtp,
+} from "@/lib/auth-api";
 import { rateLimit } from "@/lib/rate-limit";
 
-/** E.164-ish: keep it loose, the backend is the real validator. */
+/** Accept bare 10-digit, +91…, or app-style +91-… */
 function isPlausiblePhone(phone: unknown): phone is string {
-  return typeof phone === "string" && /^\+?[0-9]{7,15}$/.test(phone.trim());
+  if (typeof phone !== "string") return false;
+  const cleaned = phone.trim().replace(/[\s()-]/g, "");
+  return /^\+?[0-9]{7,15}$/.test(cleaned);
 }
 
 export async function POST(request: NextRequest) {
@@ -15,9 +20,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Invalid request body" }, { status: 400 });
   }
 
-  const phone = (body as { phone?: unknown } | null)?.phone;
-  if (!isPlausiblePhone(phone)) {
+  const rawPhone = (body as { phone?: unknown } | null)?.phone;
+  if (!isPlausiblePhone(rawPhone)) {
     return NextResponse.json({ message: "Enter a valid phone number" }, { status: 400 });
+  }
+
+  const phone = normalizeAuthPhone(rawPhone);
+  if (!/^\+91-\d{10}$/.test(phone)) {
+    return NextResponse.json(
+      { message: "Enter a valid 10-digit mobile number" },
+      { status: 400 },
+    );
   }
 
   // 5 OTP requests per phone per 10 minutes — enough for real retries, not
@@ -32,8 +45,19 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await sendOtp(phone);
-    // Never forward `message` — the dev backend echoes the OTP in it.
-    return NextResponse.json({ status: result.status });
+
+    if (result.status === "FAILED") {
+      return NextResponse.json(
+        { message: "Could not send the code — try again" },
+        { status: 502 },
+      );
+    }
+
+    // Never forward `message` — the backend may echo the OTP in it.
+    return NextResponse.json({
+      status: result.status,
+      phone,
+    });
   } catch (error) {
     const status = (error as { status?: number })?.status ?? 502;
     const message = error instanceof Error ? error.message : "Failed to send OTP";

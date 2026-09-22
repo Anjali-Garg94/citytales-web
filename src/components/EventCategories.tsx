@@ -7,17 +7,18 @@ import RevealItem from "./motion/RevealItem";
  * the API currently returns for it. Keyed by the category's full `name`.
  */
 const CATEGORY_IMAGE_OVERRIDES: Record<string, string> = {
-  "Community Clubs": "/images/events/cat-community-clubs-v2.jpg",
+  "Community Clubs": "/images/events/cat-community-clubs-v3.jpg",
   Exhibition: "/images/events/cat-exhibition-bust.jpg",
   Festive: "/images/events/cat-festive-diya.jpg",
   "Health & Wellness": "/images/events/cat-wellness-yoga.jpg",
   Kids: "/images/events/cat-kids-train.jpg",
   "Live Shows": "/images/events/cat-live-shows-mic.jpg",
   "Music & Parties": "/images/events/cat-music-disco.jpg",
+  "Workshops & Activities": "/images/events/cat-workshops-smiley.jpg",
 };
 
 /**
- * "What are you in the mood for?" — photo tiles, two per row.
+ * "Pick your Vibe" — photo tiles, two per row.
  *
  * Shows only the category's full `name`. The API also returns a short `label`,
  * but for most categories the two are identical ("Exhibition"/"Exhibition"), so
@@ -39,7 +40,7 @@ export default async function EventCategories() {
     <section className="px-4 pt-9 pb-11 lg:mx-auto lg:max-w-[1280px] lg:px-10 lg:pt-12 lg:pb-14">
       <RevealItem inGroup={false}>
         <div className="font-serif text-lg font-medium lg:text-[22px]">
-          What are you in the mood for?
+          Pick your Vibe
         </div>
       </RevealItem>
 

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthContext";
-import AuthModal from "@/components/auth/AuthModal";
 import MotionProvider from "@/components/motion/MotionProvider";
 import SmoothScroll from "@/components/motion/SmoothScroll";
 import { getCities } from "@/lib/api";
@@ -19,7 +18,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   // Loaded once here rather than client-side from the sign-up modal — the
-  // dropdown renders already populated, no fetch-on-open + retry banner.
+  // city picker on /signup and /complete-profile starts already populated.
   const cities = await getCities();
 
   return (
@@ -28,10 +27,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <MotionProvider>
           {/* Renders nothing — starts Lenis for wheel/trackpad scrolling */}
           <SmoothScroll />
-          <AuthProvider cities={cities}>
-            {children}
-            <AuthModal />
-          </AuthProvider>
+          <AuthProvider cities={cities}>{children}</AuthProvider>
         </MotionProvider>
       </body>
     </html>

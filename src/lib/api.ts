@@ -536,14 +536,14 @@ export type EventCategory = {
  * they point at local placeholder imagery rather than inventing listings.
  */
 const FALLBACK_EVENT_CATEGORIES: EventCategory[] = [
-  { id: "f-club", name: "Community Clubs", label: "Club", imageUrl: "/images/events/cat-community-clubs-v2.jpg" },
+  { id: "f-club", name: "Community Clubs", label: "Club", imageUrl: "/images/events/cat-community-clubs-v3.jpg" },
   { id: "f-exhibition", name: "Exhibition", label: "Exhibition", imageUrl: "/images/events/cat-exhibition-bust.jpg" },
   { id: "f-festive", name: "Festive", label: "Festive", imageUrl: "/images/events/cat-festive-diya.jpg" },
   { id: "f-wellness", name: "Health & Wellness", label: "Wellness", imageUrl: "/images/events/cat-wellness-yoga.jpg" },
   { id: "f-kids", name: "Kids", label: "Kids", imageUrl: "/images/events/cat-kids-train.jpg" },
   { id: "f-live", name: "Live Shows", label: "Live Shows", imageUrl: "/images/events/cat-live-shows-mic.jpg" },
   { id: "f-music", name: "Music & Parties", label: "Music", imageUrl: "/images/events/cat-music-disco.jpg" },
-  { id: "f-workshops", name: "Social Activities", label: "Workshops", imageUrl: "/images/events/grid-d.jpg" },
+  { id: "f-workshops", name: "Workshops & Activities", label: "Workshops", imageUrl: "/images/events/cat-workshops-smiley.jpg" },
 ];
 
 /**
@@ -889,5 +889,111 @@ export async function getEventById(id: string): Promise<EventDetail | null> {
       error instanceof Error ? error.message : error,
     );
     return null;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Event search — Typesense-backed GET /api/v1/event/search
+ * ------------------------------------------------------------------ */
+
+export type EventSearchHit = {
+  id: string;
+  title: string;
+  image: string;
+  venue: string;
+  city: string;
+  date: string;
+};
+
+type ApiSearchEvent = {
+  id?: string;
+  title?: string;
+  startDate?: string | null;
+  dates?: { date?: string | null }[] | null;
+  venue?: { address?: string | null; city?: string | null } | null;
+  imageUrls?: {
+    coverUrlS3Path?: string | null;
+    coverUrlS3Full?: string | null;
+  } | null;
+};
+
+type ApiSearchRow = {
+  event?: ApiSearchEvent | null;
+} & ApiSearchEvent;
+
+function unwrapSearchRows(json: unknown): ApiSearchEvent[] {
+  if (Array.isArray(json)) {
+    return json
+      .map((row) => {
+        const r = row as ApiSearchRow;
+        return r.event ?? r;
+      })
+      .filter((e): e is ApiSearchEvent => typeof e?.title === "string");
+  }
+  if (json && typeof json === "object") {
+    const content = (json as { content?: unknown }).content;
+    if (Array.isArray(content)) {
+      return content
+        .map((row) => {
+          const r = row as ApiSearchRow;
+          return r.event ?? r;
+        })
+        .filter((e): e is ApiSearchEvent => typeof e?.title === "string");
+    }
+  }
+  return [];
+}
+
+/**
+ * Typesense event search for Ludhiana (or override city).
+ * Mirrors the app's EventTab: q + city_id + status=ACTIVE.
+ */
+export async function searchEvents(
+  q: string,
+  opts: { cityId?: string; page?: number; perPage?: number } = {},
+): Promise<EventSearchHit[]> {
+  const query = q.trim();
+  if (query.length < 2) return [];
+
+  const cityId = opts.cityId?.trim() || CITY_ID;
+  const page = opts.page ?? 0;
+  const perPage = opts.perPage ?? 50;
+
+  const url = `${API_BASE_URL}/api/v1/event/search?q=${encodeURIComponent(
+    query,
+  )}&city_id=${encodeURIComponent(cityId)}&status=${encodeURIComponent(
+    "ACTIVE",
+  )}&page=${page}&per_page=${perPage}`;
+
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) {
+      console.error(
+        `[event-search] API responded ${res.status} ${res.statusText}`,
+      );
+      return [];
+    }
+    const json: unknown = await res.json();
+    return unwrapSearchRows(json)
+      .filter((e): e is ApiSearchEvent & { id: string; title: string } =>
+        typeof e.id === "string" && typeof e.title === "string",
+      )
+      .map<EventSearchHit>((e) => ({
+        id: e.id,
+        title: e.title.trim(),
+        image:
+          e.imageUrls?.coverUrlS3Path ||
+          e.imageUrls?.coverUrlS3Full ||
+          "/images/events/hero-wide.jpg",
+        venue: shortVenue(e.venue?.address, e.venue?.city),
+        city: e.venue?.city?.trim() || "",
+        date: formatEventDate(e.startDate ?? e.dates?.[0]?.date),
+      }));
+  } catch (error) {
+    console.error(
+      "[event-search] Fetch failed:",
+      error instanceof Error ? error.message : error,
+    );
+    return [];
   }
 }

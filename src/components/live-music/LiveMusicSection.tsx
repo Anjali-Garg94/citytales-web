@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { WeekendEvent } from "@/lib/placeholder-month-data";
 import { darkCategoryBadgeColors } from "@/lib/category-badge";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -37,9 +37,11 @@ function ChevronDownIcon({ className = "" }: { className?: string }) {
 function LiveMusicCard({
   event,
   showCategory = true,
+  className = "",
 }: {
   event: WeekendEvent;
   showCategory?: boolean;
+  className?: string;
 }) {
   const { user, openAuthModal } = useAuth();
   const [saved, setSaved] = useState(false);
@@ -89,7 +91,7 @@ function LiveMusicCard({
   return (
     <Link
       href={`/events/${event.slug}`}
-      className="relative flex gap-3.5 rounded-[18px] border border-white/10 bg-black/55 p-3 no-underline backdrop-blur-sm transition hover:bg-black/65 lg:gap-5 lg:rounded-[20px] lg:p-4"
+      className={`relative flex gap-3.5 rounded-[18px] border border-white/10 bg-black/55 p-3 no-underline backdrop-blur-sm transition hover:bg-black/65 lg:gap-5 lg:rounded-[20px] lg:p-4 ${className}`}
     >
       <div className="flex w-10 shrink-0 flex-col items-center justify-center text-center lg:w-12">
         <div className="text-[10px] font-semibold tracking-[0.08em] text-white/55 uppercase lg:text-[11px]">
@@ -168,6 +170,113 @@ function LiveMusicCard({
   );
 }
 
+const HOME_PAGE_SIZE = 5;
+
+function chunkEvents<T>(items: T[], size: number): T[][] {
+  if (items.length === 0) return [];
+  const pages: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    pages.push(items.slice(i, i + size));
+  }
+  return pages;
+}
+
+function HomeEventsCarousel({ events }: { events: WeekendEvent[] }) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+  const pages = chunkEvents(events, HOME_PAGE_SIZE);
+
+  useEffect(() => {
+    setActive(0);
+    scrollerRef.current?.scrollTo({ left: 0 });
+  }, [events]);
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    const onScroll = () => {
+      const slides = Array.from(scroller.children) as HTMLElement[];
+      if (slides.length === 0) return;
+      const centre = scroller.scrollLeft + scroller.clientWidth / 2;
+      let best = 0;
+      let bestDist = Infinity;
+      slides.forEach((slide, i) => {
+        const mid = slide.offsetLeft + slide.offsetWidth / 2;
+        const dist = Math.abs(mid - centre);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = i;
+        }
+      });
+      setActive(best);
+    };
+
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => scroller.removeEventListener("scroll", onScroll);
+  }, [pages.length]);
+
+  const scrollToIndex = (index: number) => {
+    const slide = scrollerRef.current?.children[index] as
+      | HTMLElement
+      | undefined;
+    slide?.scrollIntoView({
+      behavior: "smooth",
+      inline: "start",
+      block: "nearest",
+    });
+  };
+
+  return (
+    <div>
+      <div
+        ref={scrollerRef}
+        className="no-scrollbar -mx-5 flex snap-x snap-mandatory overflow-x-auto px-5 lg:-mx-8 lg:px-8"
+      >
+        {pages.map((page, pageIndex) => (
+          <div
+            key={pageIndex}
+            className="flex w-full shrink-0 snap-start flex-col gap-3 pr-3 lg:gap-3.5 lg:pr-4"
+          >
+            {page.map((event) => (
+              <LiveMusicCard
+                key={event.id}
+                event={event}
+                showCategory={false}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {pages.length > 1 ? (
+        <div
+          className="mt-4 flex items-center justify-center gap-1.5"
+          role="tablist"
+          aria-label="Event pages"
+        >
+          {pages.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              role="tab"
+              aria-selected={i === active}
+              aria-label={`Show page ${i + 1}`}
+              onClick={() => scrollToIndex(i)}
+              className={`h-1.5 rounded-full transition-all ${
+                i === active
+                  ? "w-4 bg-white"
+                  : "w-1.5 bg-white/35 hover:bg-white/55"
+              }`}
+            />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 type Props = {
   thisWeekend: WeekendEvent[];
   all: WeekendEvent[];
@@ -178,20 +287,13 @@ type Props = {
   variant?: "page" | "home";
 };
 
-const HOME_LIST_LIMIT = 5;
-
-/**
- * Shared Live Music & Parties UI — dark hero + filter pills + date-led cards.
- */
 export default function LiveMusicSection({
   thisWeekend,
   all,
   variant = "page",
 }: Props) {
   const [tab, setTab] = useState<TabId>("weekend");
-  const source = tab === "weekend" ? thisWeekend : all;
-  const events =
-    variant === "home" ? source.slice(0, HOME_LIST_LIMIT) : source;
+  const events = tab === "weekend" ? thisWeekend : all;
   const isPage = variant === "page";
 
   return (
@@ -203,7 +305,7 @@ export default function LiveMusicSection({
       {/* Full-section stage lights — no solid black fill */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <Image
-          src="/images/live-music/hero-stage-lights-v3.jpg"
+          src="/images/live-music/hero-stage-lights-v4.jpg"
           alt=""
           fill
           priority={isPage}
@@ -216,8 +318,8 @@ export default function LiveMusicSection({
         <div
           className={`relative z-10 mx-auto max-w-[720px] px-5 lg:px-8 ${
             isPage
-              ? "min-h-[280px] pt-4 pb-3 lg:pt-6 lg:pb-4"
-              : "min-h-[220px] pt-12 pb-3 lg:min-h-[260px] lg:pt-16 lg:pb-4"
+              ? "pt-4 pb-2 lg:pt-6 lg:pb-2.5"
+              : "pt-12 pb-2 lg:pt-16 lg:pb-2.5"
           }`}
         >
           {isPage ? (
@@ -251,7 +353,7 @@ export default function LiveMusicSection({
             )}
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-2.5">
+          <div className="mt-5 flex flex-wrap gap-2.5">
             {TABS.map((t) => {
               const active = t.id === tab;
               return (
@@ -277,7 +379,7 @@ export default function LiveMusicSection({
         </div>
       </header>
 
-      <div className="relative z-10 mx-auto -mt-2 max-w-[720px] px-5 pb-12 lg:px-8 lg:pb-16">
+      <div className="relative z-10 mx-auto mt-4 max-w-[720px] px-5 pb-12 lg:mt-5 lg:px-8 lg:pb-16">
         {events.length === 0 ? (
           <div className="rounded-[18px] border border-white/10 px-5 py-14 text-center">
             <div className="text-lg font-semibold text-white">
@@ -287,14 +389,12 @@ export default function LiveMusicSection({
               New music &amp; party events go up regularly — check back soon.
             </div>
           </div>
+        ) : variant === "home" ? (
+          <HomeEventsCarousel events={events} />
         ) : (
           <div className="flex flex-col gap-3 lg:gap-3.5">
             {events.map((event) => (
-              <LiveMusicCard
-                key={event.id}
-                event={event}
-                showCategory={isPage}
-              />
+              <LiveMusicCard key={event.id} event={event} showCategory />
             ))}
           </div>
         )}

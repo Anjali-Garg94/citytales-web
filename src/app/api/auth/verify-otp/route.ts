@@ -1,11 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { validateOtp } from "@/lib/auth-api";
+import { normalizeAuthPhone, validateOtp } from "@/lib/auth-api";
 import { setSession } from "@/lib/auth-session";
 import { CITY_ID } from "@/lib/api";
 import { rateLimit } from "@/lib/rate-limit";
 
 function isPlausiblePhone(phone: unknown): phone is string {
-  return typeof phone === "string" && /^\+?[0-9]{7,15}$/.test(phone.trim());
+  if (typeof phone !== "string") return false;
+  const cleaned = phone.trim().replace(/[\s()-]/g, "");
+  return /^\+?[0-9]{7,15}$/.test(cleaned);
 }
 
 function isPlausibleOtp(otp: unknown): otp is string {
@@ -20,13 +22,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Invalid request body" }, { status: 400 });
   }
 
-  const { phone, otp } = (body as { phone?: unknown; otp?: unknown } | null) ?? {};
-  if (!isPlausiblePhone(phone)) {
+  const { phone: rawPhone, otp } =
+    (body as { phone?: unknown; otp?: unknown } | null) ?? {};
+  if (!isPlausiblePhone(rawPhone)) {
     return NextResponse.json({ message: "Enter a valid phone number" }, { status: 400 });
   }
   if (!isPlausibleOtp(otp)) {
     return NextResponse.json({ message: "Enter the 6-digit code" }, { status: 400 });
   }
+
+  const phone = normalizeAuthPhone(rawPhone);
 
   // 8 verify attempts per phone per 10 minutes — generous for fat-fingered
   // codes, still bounds brute-forcing a 6-digit OTP.
