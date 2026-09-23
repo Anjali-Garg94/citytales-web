@@ -7,6 +7,7 @@ import type { EventDetail } from "@/lib/api";
 import { useAuth } from "@/components/auth/AuthContext";
 import EventBottomSheet from "@/components/event/EventBottomSheet";
 import {
+  BookmarkIcon,
   CalendarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -99,7 +100,7 @@ export default function EventDetailView({ event }: { event: EventDetail }) {
     if (savingRef.current) return;
 
     if (!user) {
-      window.alert("Please login to save events.");
+      window.alert("Please login to bookmark events.");
       openAuthModal("login");
       return;
     }
@@ -221,22 +222,14 @@ export default function EventDetailView({ event }: { event: EventDetail }) {
               type="button"
               onClick={toggleSave}
               disabled={saving}
-              aria-label={saved ? "Remove from saved" : "Save event"}
+              aria-label={saved ? "Remove bookmark" : "Bookmark event"}
               aria-pressed={saved}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink transition hover:border-ink disabled:opacity-60 lg:h-11 lg:w-11"
             >
-              <svg
-                viewBox="0 0 24 24"
+              <BookmarkIcon
                 className="h-[18px] w-[18px]"
-                fill={saved ? "#1E1A16" : "none"}
-              >
-                <path
-                  d="M6 4H18V21L12 17L6 21V4Z"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinejoin="round"
-                />
-              </svg>
+                filled={saved}
+              />
             </button>
             <button
               type="button"
@@ -250,7 +243,7 @@ export default function EventDetailView({ event }: { event: EventDetail }) {
 
           {showSaveTip ? (
             <div className="absolute top-12 right-0 z-20 w-[220px] rounded-2xl bg-ink px-3.5 py-3 text-[12px] leading-[1.45] text-white shadow-[0_12px_28px_rgba(30,26,22,0.28)]">
-              Saved! Find your saved events from your profile later.
+              Bookmarked! Find your saved events from your profile later.
               <button
                 type="button"
                 onClick={() => setShowSaveTip(false)}

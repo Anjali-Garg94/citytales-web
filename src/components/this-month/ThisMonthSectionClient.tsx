@@ -23,7 +23,7 @@ function SectionLabel({ label, note }: { label: string; note?: string }) {
   return (
     <RevealGroup stagger={0.08}>
       <RevealItem>
-        <h3 className="font-serif text-base font-medium text-ink lg:text-lg">
+        <h3 className="font-serif text-[17px] font-medium text-ink lg:text-[19px]">
           {label}
         </h3>
       </RevealItem>
@@ -99,7 +99,7 @@ export default function ThisMonthSectionClient({
       {/* 1 — Month header */}
       <div className="px-5 lg:px-20">
         <RevealItem inGroup={false}>
-          <h2 className="font-serif text-lg leading-[1.1] font-medium whitespace-nowrap text-ink lg:text-[22px] lg:leading-[1.08]">
+          <h2 className="font-serif text-xl leading-[1.1] font-medium whitespace-nowrap text-ink lg:text-[26px] lg:leading-[1.08]">
             Your city {isBusy ? "is looking busy." : "is taking shape."}
           </h2>
         </RevealItem>
@@ -161,7 +161,7 @@ export default function ThisMonthSectionClient({
         <>
           {/* 3 — This week: the visual anchor */}
           {thisWeek.length > 0 && (
-            <div className="mt-9 lg:mt-14">
+            <div id="home-this-week" className="mt-9 scroll-mt-24 lg:mt-14">
               <div className="px-5 lg:px-20">
                 <SectionLabel label="This Week" />
               </div>
@@ -179,7 +179,7 @@ export default function ThisMonthSectionClient({
                 className="mt-5 flex justify-center px-5 lg:mt-6 lg:px-20"
               >
                 <Link
-                  href="/this-week"
+                  href="/explore-events?from=this-week"
                   className="flex w-fit items-center gap-2 rounded-full bg-accent px-6 py-2 text-[14px] font-semibold tracking-[0.01em] text-white no-underline transition hover:gap-3 hover:brightness-110 lg:px-7 lg:py-2.5 lg:text-[15px]"
                 >
                   See all this Week
@@ -192,19 +192,29 @@ export default function ThisMonthSectionClient({
           {/* 4 — Next week: the scanning layer. Capped at 4; the rest lives
               behind "See everything upcoming". */}
           {nextUp.length > 0 && (
-            <div className="mt-10 px-5 lg:mt-16 lg:px-20">
+            <div
+              id="home-next-week"
+              className="mt-10 scroll-mt-24 px-5 lg:mt-16 lg:px-20"
+            >
               <SectionLabel label="Next week" />
               <MonthEventList events={nextUp.slice(0, LIST_LIMIT)} />
-              <SeeAllLink href="/this-week">See everything upcoming</SeeAllLink>
+              <SeeAllLink href="/explore-events?from=next-week">
+                See everything upcoming
+              </SeeAllLink>
             </div>
           )}
 
           {/* 5 — After next week: same treatment as Next week */}
           {later.length > 0 && (
-            <div className="mt-10 px-5 lg:mt-16 lg:px-20">
+            <div
+              id="home-later"
+              className="mt-10 scroll-mt-24 px-5 lg:mt-16 lg:px-20"
+            >
               <SectionLabel label="Later this month" />
               <MonthEventList events={later.slice(0, LIST_LIMIT)} />
-              <SeeAllLink href="/this-week">Explore everything upcoming</SeeAllLink>
+              <SeeAllLink href="/explore-events?from=later">
+                Explore everything upcoming
+              </SeeAllLink>
             </div>
           )}
         </>

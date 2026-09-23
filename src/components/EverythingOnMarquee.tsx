@@ -31,7 +31,7 @@ export default function EverythingOnMarquee() {
         </RevealItem>
         <RevealItem>
           <Link
-            href="/events"
+            href="/explore-events"
             className="text-xs font-semibold tracking-[0.04em] text-accent no-underline lg:text-[13px]"
           >
             See all events →

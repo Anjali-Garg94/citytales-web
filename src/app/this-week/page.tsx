@@ -1,11 +1,6 @@
-import ComingSoonPage from "@/components/ComingSoonPage";
+import { redirect } from "next/navigation";
 
+/** Legacy route — This Week feed lives at /explore-events?from=this-week. */
 export default function ThisWeekPage() {
-  return (
-    <ComingSoonPage
-      eyebrow="This week"
-      title="The full week's lineup is on its way"
-      description="Every event happening near you this week, in one browsable feed — coming soon."
-    />
-  );
+  redirect("/explore-events?from=this-week");
 }

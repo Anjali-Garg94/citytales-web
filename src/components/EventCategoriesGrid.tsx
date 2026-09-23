@@ -39,7 +39,7 @@ export default function EventCategoriesGrid({
       {tiles.map((tile) => (
         <motion.div key={tile.id} variants={fadeIn()}>
           <Link
-            href={`/events?category=${encodeURIComponent(tile.label)}`}
+            href={`/explore-events?category=${encodeURIComponent(tile.id)}`}
             className="group relative block aspect-[4/3] overflow-hidden rounded-[8px] no-underline lg:rounded-[10px]"
           >
             <RevealImage inGroup>

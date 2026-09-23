@@ -1,21 +1,7 @@
 import { getEventCategories } from "@/lib/api";
+import { categoryCoverImage } from "@/lib/category-images";
 import EventCategoriesGrid, { type CategoryTile } from "./EventCategoriesGrid";
 import RevealItem from "./motion/RevealItem";
-
-/**
- * Hand-picked local photo for a specific category, used instead of whatever
- * the API currently returns for it. Keyed by the category's full `name`.
- */
-const CATEGORY_IMAGE_OVERRIDES: Record<string, string> = {
-  "Community Clubs": "/images/events/cat-community-clubs-v3.jpg",
-  Exhibition: "/images/events/cat-exhibition-bust.jpg",
-  Festive: "/images/events/cat-festive-diya.jpg",
-  "Health & Wellness": "/images/events/cat-wellness-yoga.jpg",
-  Kids: "/images/events/cat-kids-train.jpg",
-  "Live Shows": "/images/events/cat-live-shows-mic.jpg",
-  "Music & Parties": "/images/events/cat-music-disco.jpg",
-  "Workshops & Activities": "/images/events/cat-workshops-smiley.jpg",
-};
 
 /**
  * "Pick your Vibe" — photo tiles, two per row.
@@ -33,11 +19,14 @@ export default async function EventCategories() {
     id: category.id,
     name: category.name,
     label: category.label,
-    image: CATEGORY_IMAGE_OVERRIDES[category.name] ?? category.imageUrl,
+    image: categoryCoverImage(category.name, category.imageUrl),
   }));
 
   return (
-    <section className="px-4 pt-9 pb-11 lg:mx-auto lg:max-w-[1280px] lg:px-10 lg:pt-12 lg:pb-14">
+    <section
+      id="home-pick-vibe"
+      className="scroll-mt-24 px-4 pt-9 pb-11 lg:mx-auto lg:max-w-[1280px] lg:px-10 lg:pt-12 lg:pb-14"
+    >
       <RevealItem inGroup={false}>
         <div className="font-serif text-lg font-medium lg:text-[22px]">
           Pick your Vibe

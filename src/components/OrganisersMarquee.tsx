@@ -36,12 +36,12 @@ export default async function OrganisersMarquee() {
           instead of fading the black into the page. */}
       <div className="bg-[#0C0A09]">
         {/* Height is sized to show four tiles per column at once:
-              mobile  4 × 140 + 3 × 12 gap = 596, band 620
-              desktop 4 × 230 + 3 × 24 gap = 992, band 1000
+              mobile  4 × 125 + 3 × 12 gap = 536, band 560
+              desktop 4 × 210 + 3 × 24 gap = 912, band 930
             Change a tile height and this has to be recomputed, or the band
             ends up showing three-and-a-bit. */}
         <div
-          className="flex h-[620px] gap-3 px-5 lg:mx-auto lg:h-[1000px] lg:max-w-[1280px] lg:gap-6 lg:px-20"
+          className="flex h-[560px] gap-3 px-5 lg:mx-auto lg:h-[930px] lg:max-w-[1280px] lg:gap-6 lg:px-20"
           style={{
             maskImage:
               "linear-gradient(180deg, transparent 0%, #000 12%, #000 88%, transparent 100%)",
@@ -71,7 +71,7 @@ export default async function OrganisersMarquee() {
               {[...column, ...column].map((org, j) => (
                 <div
                   key={`${org.name}-${j}`}
-                  className="relative mb-3 h-[140px] w-full overflow-hidden lg:mb-6 lg:h-[230px]"
+                  className="relative mb-3 h-[125px] w-full overflow-hidden lg:mb-6 lg:h-[210px]"
                 >
                   <Image
                     src={org.image}

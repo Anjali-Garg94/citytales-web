@@ -13,7 +13,7 @@ export default async function ThisWeek() {
           This week
         </div>
         <Link
-          href="/this-week"
+          href="/explore-events?from=this-week"
           className="flex items-center gap-1 text-[12.5px] font-semibold text-accent no-underline lg:gap-1.5 lg:text-sm"
         >
           Show all

@@ -8,6 +8,7 @@ import { darkCategoryBadgeColors } from "@/lib/category-badge";
 import { useAuth } from "@/components/auth/AuthContext";
 import {
   ArrowRightIcon,
+  BookmarkIcon,
   ChevronLeftIcon,
   ClockIcon,
   PinIcon,
@@ -57,7 +58,7 @@ function LiveMusicCard({
       e.stopPropagation();
       if (saving) return;
       if (!user) {
-        window.alert("Please login to save events.");
+        window.alert("Please login to bookmark events.");
         openAuthModal("login");
         return;
       }
@@ -149,22 +150,11 @@ function LiveMusicCard({
         type="button"
         onClick={toggleSave}
         disabled={saving}
-        aria-label={saved ? "Remove from saved" : "Save event"}
+        aria-label={saved ? "Remove bookmark" : "Bookmark event"}
         aria-pressed={saved}
         className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center text-white/80 transition hover:text-white"
       >
-        <svg
-          viewBox="0 0 24 24"
-          className="h-[17px] w-[17px]"
-          fill={saved ? "#FFFFFF" : "none"}
-        >
-          <path
-            d="M12 20.5C12 20.5 4 15.8 4 9.9C4 7.2 6.1 5 8.7 5C10.1 5 11.3 5.7 12 6.8C12.7 5.7 13.9 5 15.3 5C17.9 5 20 7.2 20 9.9C20 15.8 12 20.5 12 20.5Z"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <BookmarkIcon className="h-[17px] w-[17px]" filled={saved} />
       </button>
     </Link>
   );

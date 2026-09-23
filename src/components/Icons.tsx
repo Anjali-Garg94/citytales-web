@@ -30,10 +30,25 @@ export function ClockIcon({ className = "" }: { className?: string }) {
   );
 }
 
-export function BookmarkIcon({ className = "" }: { className?: string }) {
+export function BookmarkIcon({
+  className = "",
+  filled = false,
+}: {
+  className?: string;
+  filled?: boolean;
+}) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M6 4H18V21L12 17L6 21V4Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <svg
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      className={className}
+    >
+      <path
+        d="M6 4H18V21L12 17L6 21V4Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

@@ -8,9 +8,14 @@ import { MenuIcon, PinIcon } from "./Icons";
 /** Launch city — matches CITY_ID in src/lib/api.ts. No switcher wired up yet. */
 const CITY_NAME = "Ludhiana";
 
+const MENU_LINKS = [
+  { label: "Discover events", href: "/explore-events" },
+  { label: "Saved Events", href: "/saved-events" },
+] as const;
+
 /**
- * Mobile-only hamburger menu, opening a small panel with the current city
- * and Login / Sign up — the mobile-nav essentials, not the full desktop nav.
+ * Mobile-only hamburger menu, opening a small panel with the current city,
+ * Events / Saved Events, and Login / Sign up.
  */
 export default function HeaderMobileMenu() {
   const [open, setOpen] = useState(false);
@@ -45,9 +50,22 @@ export default function HeaderMobileMenu() {
               </span>
             </div>
 
+            <nav className="mt-3 flex flex-col">
+              {MENU_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className="rounded-xl px-3.5 py-2.5 text-[15px] font-semibold text-ink no-underline transition hover:bg-accent-tint"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+
             {!loading && user ? (
-              <div className="mt-3">
-                <div className="truncate text-[13px] font-semibold text-ink">
+              <div className="mt-3 border-t border-line pt-3">
+                <div className="truncate px-1 text-[13px] font-semibold text-ink">
                   {user.name || user.phone}
                 </div>
                 <button
@@ -62,7 +80,7 @@ export default function HeaderMobileMenu() {
                 </button>
               </div>
             ) : (
-              <div className="mt-3 flex gap-2.5">
+              <div className="mt-3 flex gap-2.5 border-t border-line pt-3">
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}

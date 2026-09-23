@@ -356,11 +356,18 @@ function formatEventDateISO(iso: string | null | undefined): string {
 export async function getMonthSectionEvents(
   key: string,
   size = 20,
+  categoryId?: string,
 ): Promise<MonthEvent[]> {
   try {
-    const url = `${API_BASE_URL}/api/v1/event/section?cityId=${encodeURIComponent(
-      CITY_ID,
-    )}&key=${encodeURIComponent(key)}&page=0&size=${size}`;
+    const params = new URLSearchParams({
+      cityId: CITY_ID,
+      key,
+      page: "0",
+      size: String(size),
+    });
+    if (categoryId) params.set("categoryId", categoryId);
+
+    const url = `${API_BASE_URL}/api/v1/event/section?${params.toString()}`;
 
     const [res, categoryNames] = await Promise.all([
       fetch(url, { next: { revalidate: 300 } }),
@@ -369,7 +376,7 @@ export async function getMonthSectionEvents(
 
     if (!res.ok) {
       console.error(
-        `[month:${key}] API responded ${res.status} ${res.statusText} — showing empty state`,
+        `[month:${key}${categoryId ? `:${categoryId}` : ""}] API responded ${res.status} ${res.statusText} — showing empty state`,
       );
       return [];
     }
@@ -385,14 +392,14 @@ export async function getMonthSectionEvents(
     return events
       .filter((e): e is ApiEvent => typeof e?.title === "string")
       .map<MonthEvent>((e) => {
-        const categoryId = e.categoryIds?.[0];
+        const catId = e.categoryIds?.[0];
         const firstDate = e.dates?.[0];
         return {
           id: e.id,
           slug: e.id,
           title: e.title.trim(),
           venue: shortVenue(e.venue?.address, e.venue?.city),
-          category: (categoryId && categoryNames.get(categoryId)) || "EVENT",
+          category: (catId && categoryNames.get(catId)) || "EVENT",
           date: formatEventDateISO(e.startDate ?? firstDate?.date),
           startTime: formatTime(firstDate?.startTime),
           endTime: formatTime(firstDate?.endTime) || undefined,

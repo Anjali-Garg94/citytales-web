@@ -46,7 +46,7 @@ export default function Hero() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="flex flex-col justify-center px-5 pt-10 pb-6 lg:bg-bg lg:px-16 lg:py-14"
+        className="flex flex-col justify-center px-5 pt-6 pb-6 lg:justify-start lg:bg-bg lg:px-16 lg:pt-16 lg:pb-14"
       >
         <h1 className="font-serif text-[30px] font-medium leading-[1.1] text-balance text-ink lg:text-[42px] lg:leading-[1.06]">
           <span className="block text-balance">Your city didn&#39;t stay home.</span>
