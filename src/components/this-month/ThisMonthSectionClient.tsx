@@ -188,7 +188,7 @@ export default function ThisMonthSectionClient({
           {nextUp.length > 0 && (
             <div
               id="home-next-week"
-              className="mt-10 scroll-mt-24 px-5 lg:mt-16 lg:px-20"
+              className="month-list-panel mt-10 scroll-mt-24 mx-5 rounded-[22px] px-4 py-5 lg:mt-16 lg:mx-20 lg:rounded-[28px] lg:px-6 lg:py-7"
             >
               <SectionLabel label="Next week" />
               <MonthEventList events={nextUp.slice(0, LIST_LIMIT)} />
@@ -202,7 +202,7 @@ export default function ThisMonthSectionClient({
           {later.length > 0 && (
             <div
               id="home-later"
-              className="mt-10 scroll-mt-24 px-5 lg:mt-16 lg:px-20"
+              className="month-list-panel mt-10 scroll-mt-24 mx-5 rounded-[22px] px-4 py-5 lg:mt-16 lg:mx-20 lg:rounded-[28px] lg:px-6 lg:py-7"
             >
               <SectionLabel label="Later this month" />
               <MonthEventList events={later.slice(0, LIST_LIMIT)} />

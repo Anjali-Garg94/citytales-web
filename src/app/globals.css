@@ -186,6 +186,17 @@ body {
   );
 }
 
+/* Next week / Later — soft sky → mint (Athletic Avenue atmosphere) */
+.month-list-panel {
+  background: linear-gradient(
+    135deg,
+    #c8e4f8 0%,
+    #d5eef6 38%,
+    #dff5ea 72%,
+    #d4f0dc 100%
+  );
+}
+
 /* Live Music — black canvas + soft blurred aurora (no photo) */
 .live-music-aurora {
   pointer-events: none;
