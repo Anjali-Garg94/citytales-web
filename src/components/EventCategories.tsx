@@ -28,7 +28,7 @@ export default async function EventCategories() {
       className="scroll-mt-24 px-4 pt-9 pb-11 lg:mx-auto lg:max-w-[1280px] lg:px-10 lg:pt-12 lg:pb-14"
     >
       <RevealItem inGroup={false}>
-        <div className="font-serif text-lg font-medium lg:text-[22px]">
+        <div className="font-serif text-[22px] leading-[1.15] font-semibold tracking-[-0.02em] text-ink lg:text-[26px] lg:leading-[1.1]">
           Pick your Vibe
         </div>
       </RevealItem>

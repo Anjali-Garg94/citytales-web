@@ -31,7 +31,7 @@ export default async function ThisWeek() {
             your own event.
           </div>
           <Link href="/for-organisers" className="cta-pill mt-4">
-            Become an organiser
+            Create your own event
             <ArrowRightIcon className="cta-pill__arrow" />
           </Link>
         </div>

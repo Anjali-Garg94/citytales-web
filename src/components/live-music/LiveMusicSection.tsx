@@ -72,7 +72,7 @@ function LiveMusicCard({
   return (
     <Link
       href={`/events/${event.slug}`}
-      className={`relative flex gap-3.5 rounded-[18px] border border-white/10 bg-black/45 p-3 no-underline backdrop-blur-md transition hover:bg-black/55 lg:gap-4 lg:rounded-[20px] lg:p-3.5 ${className}`}
+      className={`relative ml-3 flex gap-3.5 rounded-[18px] border border-white/10 bg-black/45 py-3 pr-3 pl-5 no-underline backdrop-blur-md transition hover:bg-black/55 lg:ml-4 lg:gap-4 lg:rounded-[20px] lg:py-3.5 lg:pr-3.5 lg:pl-6 ${className}`}
     >
       <div className="flex w-10 shrink-0 flex-col items-center justify-center text-center lg:w-11">
         <div className="text-[10px] font-semibold tracking-[0.08em] text-white/55 uppercase lg:text-[11px]">

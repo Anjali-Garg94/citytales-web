@@ -1,25 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./auth/AuthContext";
-import { MenuIcon, PinIcon } from "./Icons";
+import { CloseIcon, MenuIcon, PinIcon } from "./Icons";
 
 /** Launch city — matches CITY_ID in src/lib/api.ts. No switcher wired up yet. */
 const CITY_NAME = "Ludhiana";
 
-const MENU_LINKS = [
+const PRIMARY_LINKS = [
   { label: "Discover events", href: "/explore-events" },
   { label: "Saved Events", href: "/saved-events" },
 ] as const;
 
 /**
- * Mobile-only hamburger menu, opening a small panel with the current city,
- * Events / Saved Events, and Login / Sign up.
+ * Mobile menu — one dense frosted glass panel.
  */
 export default function HeaderMobileMenu() {
   const [open, setOpen] = useState(false);
   const { user, loading, logout } = useAuth();
+
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
   return (
     <div className="relative lg:hidden">
@@ -28,44 +36,61 @@ export default function HeaderMobileMenu() {
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
-        className="flex h-8 w-8 items-center justify-center text-ink"
+        className="glass-menu-btn relative z-50 flex h-10 w-10 items-center justify-center rounded-[12px] text-ink transition hover:brightness-105"
       >
-        <MenuIcon className="h-5 w-5" />
+        {open ? (
+          <CloseIcon className="h-[18px] w-[18px]" />
+        ) : (
+          <MenuIcon className="h-[18px] w-[18px]" />
+        )}
       </button>
 
-      {open && (
+      {open ? (
         <>
           <button
             type="button"
             aria-label="Close menu"
             onClick={() => setOpen(false)}
-            className="fixed inset-0 z-40 bg-ink/20"
+            className="fixed inset-0 z-40 bg-black/[0.08]"
           />
 
-          <div className="absolute top-[calc(100%+10px)] right-0 z-50 w-[260px] rounded-2xl bg-bg p-4 shadow-[0_18px_40px_-12px_rgba(30,26,22,0.28)]">
-            <div className="flex items-center gap-1.5 rounded-xl bg-accent-tint px-3.5 py-2.5">
+          <div className="glass-menu-panel fixed top-[68px] right-4 z-50 w-[min(280px,calc(100vw-2rem))] px-4 py-4 sm:right-5">
+            <nav>
+              <ul className="flex flex-col">
+                {PRIMARY_LINKS.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setOpen(false)}
+                      className="block rounded-xl px-2.5 py-2.5 text-[16px] font-semibold tracking-[-0.015em] text-ink no-underline transition hover:bg-black/[0.04]"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className="my-3 h-px bg-black/[0.08]" />
+
+            <div className="px-2.5 pb-1 text-[12px] font-medium text-[#8A8A8E]">
+              City
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-2">
               <PinIcon className="h-4 w-4 text-accent-deep" />
-              <span className="text-[13px] font-semibold text-ink">
+              <span className="text-[16px] font-semibold tracking-[-0.015em] text-ink">
                 {CITY_NAME}
               </span>
             </div>
 
-            <nav className="mt-3 flex flex-col">
-              {MENU_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className="rounded-xl px-3.5 py-2.5 text-[15px] font-semibold text-ink no-underline transition hover:bg-accent-tint"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
+            <div className="my-3 h-px bg-black/[0.08]" />
 
+            <div className="px-2.5 pb-1 text-[12px] font-medium text-[#8A8A8E]">
+              Account
+            </div>
             {!loading && user ? (
-              <div className="mt-3 border-t border-line pt-3">
-                <div className="truncate px-1 text-[13px] font-semibold text-ink">
+              <>
+                <div className="truncate px-2.5 py-2 text-[15px] font-semibold text-ink">
                   {user.name || user.phone}
                 </div>
                 <button
@@ -74,24 +99,24 @@ export default function HeaderMobileMenu() {
                     setOpen(false);
                     void logout();
                   }}
-                  className="mt-2.5 w-full rounded-full border border-ink px-4 py-2.5 text-center text-[13px] font-semibold text-ink"
+                  className="mt-1.5 w-full rounded-full bg-ink px-4 py-2.5 text-center text-[13px] font-semibold text-white"
                 >
                   Log out
                 </button>
-              </div>
+              </>
             ) : (
-              <div className="mt-3 flex gap-2.5 border-t border-line pt-3">
+              <div className="flex flex-col">
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
-                  className="flex-1 rounded-full border border-ink px-4 py-2.5 text-center text-[13px] font-semibold text-ink no-underline"
+                  className="block rounded-xl px-2.5 py-2.5 text-[16px] font-semibold tracking-[-0.015em] text-ink no-underline transition hover:bg-black/[0.04]"
                 >
                   Login
                 </Link>
                 <Link
                   href="/signup"
                   onClick={() => setOpen(false)}
-                  className="cta-pill flex-1"
+                  className="block rounded-xl px-2.5 py-2.5 text-[16px] font-semibold tracking-[-0.015em] text-ink no-underline transition hover:bg-black/[0.04]"
                 >
                   Sign up
                 </Link>
@@ -99,7 +124,7 @@ export default function HeaderMobileMenu() {
             )}
           </div>
         </>
-      )}
+      ) : null}
     </div>
   );
 }

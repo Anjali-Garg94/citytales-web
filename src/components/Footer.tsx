@@ -1,13 +1,6 @@
 import Link from "next/link";
 import { InstagramIcon, ChatIcon } from "./Icons";
 
-const explore = [
-  { label: "Today", href: "/today" },
-  { label: "Clubs", href: "/clubs" },
-  { label: "Activities", href: "/activities" },
-  { label: "Exhibitions", href: "/exhibitions" },
-];
-
 const cityTalesLinks = [
   { label: "About", href: "/about" },
   { label: "List your event", href: "/for-organisers" },
@@ -17,7 +10,7 @@ const cityTalesLinks = [
 export default function Footer() {
   return (
     <footer className="mt-auto bg-bg px-5 pt-11 pb-10 lg:px-20 lg:pt-14 lg:pb-9">
-      <div className="lg:mx-auto lg:grid lg:max-w-[1280px] lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-10">
+      <div className="lg:mx-auto lg:grid lg:max-w-[1280px] lg:grid-cols-[1.4fr_1fr_1fr] lg:gap-10">
         <div>
           <div className="font-serif text-[22px] font-bold lg:text-2xl">CityTales</div>
           <div className="mt-1.5 text-[11.5px] tracking-[0.04em] text-ink-soft lg:text-xs">
@@ -29,19 +22,6 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 flex flex-col gap-7 lg:mt-0 lg:contents">
-          <div>
-            <div className="mb-3 text-[11px] font-semibold tracking-[0.1em] text-ink-soft lg:mb-3.5">
-              EXPLORE
-            </div>
-            <div className="flex flex-col gap-2.5 text-sm lg:gap-[11px]">
-              {explore.map((link) => (
-                <Link key={link.label} href={link.href} className="text-ink no-underline hover:text-accent">
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-
           <div>
             <div className="mb-3 text-[11px] font-semibold tracking-[0.1em] text-ink-soft lg:mb-3.5">
               CITYTALES

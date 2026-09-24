@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { getOrganiserColumns } from "@/lib/api";
-import { ArrowRightIcon } from "./Icons";
 import RevealGroup from "./motion/RevealGroup";
 import RevealItem from "./motion/RevealItem";
 
@@ -34,7 +33,7 @@ export default async function OrganisersMarquee() {
           background on the masked element and the gradient eats the colour at
           the top and bottom edges too. This way the logos fade into the black
           instead of fading the black into the page. */}
-      <div className="bg-[#0C0A09]">
+      <div className="bg-[#0C0A09] pb-10 lg:pb-14">
         {/* Height is sized to show four tiles per column at once:
               mobile  4 × 125 + 3 × 12 gap = 536, band 560
               desktop 4 × 210 + 3 × 24 gap = 912, band 930
@@ -87,17 +86,6 @@ export default async function OrganisersMarquee() {
           ))}
         </div>
       </div>
-
-      {/* CTA sits after the marquee: you see who's already here, then get asked to join */}
-      <RevealItem
-        inGroup={false}
-        className="flex justify-center px-5 pt-8 pb-10 lg:pt-10 lg:pb-14"
-      >
-        <a href="/for-organisers" className="cta-pill">
-          Become an organiser
-          <ArrowRightIcon className="cta-pill__arrow" />
-        </a>
-      </RevealItem>
     </section>
   );
 }
