@@ -281,7 +281,7 @@ export default function LiveMusicSection({
       {/* Full-section stage lights — no solid black fill */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <Image
-          src="/images/live-music/hero-stage-lights-v4.jpg"
+          src="/images/live-music/hero-stage-lights-v5.jpg"
           alt=""
           fill
           priority={isPage}

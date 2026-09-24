@@ -42,7 +42,7 @@ function SeeAllLink({ href, children }: { href: string; children: React.ReactNod
     <RevealItem inGroup={false}>
       <Link
         href={href}
-        className="mt-4 flex items-center justify-end gap-1.5 text-[13px] font-semibold tracking-[0.02em] text-accent no-underline hover:text-accent-deep"
+        className="mt-4 flex items-center justify-center gap-1.5 text-[14px] font-semibold tracking-[0.02em] text-accent no-underline hover:text-accent-deep"
       >
         {children}
         <ArrowRightIcon className="h-3.5 w-3.5" />
@@ -176,18 +176,11 @@ export default function ThisMonthSectionClient({
                 ))}
               </div>
 
-              <RevealItem
-                inGroup={false}
-                className="mt-5 flex justify-center px-5 lg:mt-6 lg:px-20"
-              >
-                <Link
-                  href="/explore-events?from=this-week"
-                  className="flex w-fit items-center gap-2 rounded-full bg-accent px-6 py-2 text-[14px] font-semibold tracking-[0.01em] text-white no-underline transition hover:gap-3 hover:brightness-110 lg:px-7 lg:py-2.5 lg:text-[15px]"
-                >
+              <div className="px-5 lg:px-20">
+                <SeeAllLink href="/explore-events?from=this-week">
                   See all this Week
-                  <ArrowRightIcon className="h-4 w-4" />
-                </Link>
-              </RevealItem>
+                </SeeAllLink>
+              </div>
             </div>
           )}
 
@@ -201,7 +194,7 @@ export default function ThisMonthSectionClient({
               <SectionLabel label="Next week" />
               <MonthEventList events={nextUp.slice(0, LIST_LIMIT)} />
               <SeeAllLink href="/explore-events?from=next-week">
-                See everything upcoming
+                See All Next Week
               </SeeAllLink>
             </div>
           )}

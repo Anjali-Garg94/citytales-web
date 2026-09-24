@@ -352,11 +352,17 @@ function formatEventDateISO(iso: string | null | undefined): string {
  * Empty array on failure or absence, same policy as the other live
  * sections: no invented listings on an outage. Events with no parseable
  * date are dropped since the list is date-anchored.
+ *
+ * Optional `sort` — `recent` (Recently added) or `date` (By date).
+ * Omit for the section's backend default.
  */
+export type SectionSort = "recent" | "date";
+
 export async function getMonthSectionEvents(
   key: string,
   size = 20,
   categoryId?: string,
+  sort?: SectionSort,
 ): Promise<MonthEvent[]> {
   try {
     const params = new URLSearchParams({
@@ -366,6 +372,7 @@ export async function getMonthSectionEvents(
       size: String(size),
     });
     if (categoryId) params.set("categoryId", categoryId);
+    if (sort) params.set("sort", sort);
 
     const url = `${API_BASE_URL}/api/v1/event/section?${params.toString()}`;
 
@@ -376,7 +383,7 @@ export async function getMonthSectionEvents(
 
     if (!res.ok) {
       console.error(
-        `[month:${key}${categoryId ? `:${categoryId}` : ""}] API responded ${res.status} ${res.statusText} — showing empty state`,
+        `[month:${key}${categoryId ? `:${categoryId}` : ""}${sort ? `:${sort}` : ""}] API responded ${res.status} ${res.statusText} — showing empty state`,
       );
       return [];
     }
@@ -424,6 +431,7 @@ export async function getMonthSectionEvents(
 export async function getEventsByCategory(
   categoryId: string,
   size = 60,
+  sort?: SectionSort,
 ): Promise<MonthEvent[]> {
   const categoryNames = await getEventCategoryNames();
 
@@ -433,6 +441,7 @@ export async function getEventsByCategory(
       page: "0",
       size: String(size),
     });
+    if (sort) params.set("sort", sort);
     const url = `${API_BASE_URL}/api/v1/event/category/${encodeURIComponent(
       categoryId,
     )}?${params.toString()}`;
@@ -463,10 +472,10 @@ export async function getEventsByCategory(
 
   // Fallback: same filter the app uses on section endpoints.
   const batches = await Promise.all([
-    getMonthSectionEvents("THIS_WEEK", size, categoryId),
-    getMonthSectionEvents("NEXT_WEEK", size, categoryId),
-    getMonthSectionEvents("AFTER_NEXT_WEEK", size, categoryId),
-    getMonthSectionEvents("UPCOMING", size, categoryId),
+    getMonthSectionEvents("THIS_WEEK", size, categoryId, sort),
+    getMonthSectionEvents("NEXT_WEEK", size, categoryId, sort),
+    getMonthSectionEvents("AFTER_NEXT_WEEK", size, categoryId, sort),
+    getMonthSectionEvents("UPCOMING", size, categoryId, sort),
   ]);
 
   const seen = new Set<string>();

@@ -5,6 +5,7 @@ import {
   getEventCategories,
   getEventsByCategory,
   getMonthSectionEvents,
+  type SectionSort,
 } from "@/lib/api";
 import { categoryCoverImage } from "@/lib/category-images";
 
@@ -33,19 +34,26 @@ const SECTION_BY_FROM: Record<
   },
 };
 
+function parseSort(value?: string): SectionSort | undefined {
+  if (value === "recent" || value === "date") return value;
+  return undefined;
+}
+
 /**
  * Discover events — categories on top + feed.
  *
  * `?from=this-week|next-week|later` — section key (+ optional categoryId)
  * `?category=<id>` alone (Pick your Vibe / chip) — GET /event/category/{id}
+ * `?sort=recent|date` — section/category sort (omit for backend default)
  * Menu Discover with no params — THIS_WEEK
  */
 export default async function ExploreEventsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; category?: string }>;
+  searchParams: Promise<{ from?: string; category?: string; sort?: string }>;
 }) {
-  const { from, category: categoryParam } = await searchParams;
+  const { from, category: categoryParam, sort: sortParam } = await searchParams;
+  const sort = parseSort(sortParam);
 
   const categories = await getEventCategories();
   const selectedCategory = categoryParam
@@ -66,13 +74,15 @@ export default async function ExploreEventsPage({
 
   // Home / Discover category pick → dedicated category endpoint.
   // Week CTAs keep the section API (optionally filtered by category).
-  const events = categoryId && !sectionFrom
-    ? await getEventsByCategory(categoryId, 60)
-    : await getMonthSectionEvents(
-        sectionFrom?.key ?? "THIS_WEEK",
-        60,
-        categoryId,
-      );
+  const events =
+    categoryId && !sectionFrom
+      ? await getEventsByCategory(categoryId, 60, sort)
+      : await getMonthSectionEvents(
+          sectionFrom?.key ?? "THIS_WEEK",
+          60,
+          categoryId,
+          sort,
+        );
 
   const tiles = categories.map((c) => ({
     id: c.id,
@@ -90,6 +100,7 @@ export default async function ExploreEventsPage({
           heading={heading}
           initialCategoryId={categoryId ?? "all"}
           from={from}
+          sort={sort}
         />
       </section>
     </PageShell>
