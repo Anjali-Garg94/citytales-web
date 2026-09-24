@@ -62,7 +62,7 @@ export default function Hero() {
         <p className="mt-3 max-w-[320px] text-sm leading-[1.6] text-ink-soft lg:mt-5 lg:max-w-[380px] lg:text-[14.5px]">
           Live music, workshops, food, fitness and many more.
         </p>
-        <div className="mt-7 hidden lg:block">{cta}</div>
+        <div className="mt-7 hidden lg:block lg:self-start">{cta}</div>
       </motion.div>
 
       <div className="relative h-[420px] overflow-hidden px-5 pt-2 pb-4 lg:h-auto lg:pt-11 lg:pr-16 lg:pb-11 lg:pl-6">
@@ -99,7 +99,7 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="flex justify-center px-5 pt-2 pb-8 lg:hidden">{cta}</div>
+      <div className="flex justify-end px-5 pt-2 pb-8 lg:hidden">{cta}</div>
     </section>
   );
 }
