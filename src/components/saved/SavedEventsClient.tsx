@@ -1,14 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthContext";
+import EventListRow from "@/components/event/EventListRow";
 import {
   BookmarkIcon,
-  ClockIcon,
-  PinIcon,
   ShareIcon,
 } from "@/components/Icons";
 
@@ -34,7 +32,7 @@ type StatusFilter = "active" | "expired";
 function SkeletonCard() {
   return (
     <div className="flex animate-pulse gap-3.5">
-      <div className="h-[84px] w-[84px] shrink-0 rounded-[12px] bg-[#EFEFEF]" />
+      <div className="event-thumb event-thumb--list bg-[#EFEFEF]" />
       <div className="flex-1 py-1">
         <div className="h-3 w-16 rounded bg-[#EFEFEF]" />
         <div className="mt-2 h-4 w-[80%] rounded bg-[#EFEFEF]" />
@@ -71,41 +69,17 @@ function SavedEventRow({
   const place = [event.venue, event.city].filter(Boolean).join(", ");
 
   return (
-    <div className="flex gap-3.5">
-      <Link
-        href={`/events/${event.id}`}
-        className="relative h-[84px] w-[84px] shrink-0 overflow-hidden rounded-[12px] bg-[#F4F3F1] no-underline"
-      >
-        <Image
-          src={event.image}
-          alt=""
-          fill
-          sizes="84px"
-          className={`object-cover ${ended ? "opacity-55" : ""}`}
-        />
-        {ended ? (
-          <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-            Ended
-          </span>
-        ) : null}
-      </Link>
-
-      <div className="min-w-0 flex-1 pt-0.5">
-        <div className="flex items-start justify-between gap-2">
-          <Link href={`/events/${event.id}`} className="min-w-0 no-underline">
-            {event.urgencyChip && !ended ? (
-              <span className="inline-block rounded-full bg-[#FFF1E0] px-2 py-0.5 text-[10px] font-semibold tracking-[0.02em] text-[#C46A1B]">
-                {event.urgencyChip}
-              </span>
-            ) : null}
-            <div
-              className={`line-clamp-2 text-[15px] leading-[1.3] font-semibold text-ink ${
-                event.urgencyChip && !ended ? "mt-0.5" : ""
-              }`}
-            >
-              {event.title}
-            </div>
-          </Link>
+    <EventListRow
+      href={`/events/${event.id}`}
+      image={event.image}
+      title={event.title}
+      categoryVariant="none"
+      time={event.startTimeLabel}
+      venue={place || undefined}
+      urgencyChip={event.urgencyChip}
+      ended={ended}
+      trailing={
+        ended ? undefined : (
           <button
             type="button"
             onClick={() => void shareEvent(event)}
@@ -114,22 +88,9 @@ function SavedEventRow({
           >
             <ShareIcon className="h-4 w-4" />
           </button>
-        </div>
-
-        {event.startTimeLabel ? (
-          <div className="mt-1.5 flex items-center gap-1.5 text-[13px] text-[#8A8A8A]">
-            <ClockIcon className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{event.startTimeLabel}</span>
-          </div>
-        ) : null}
-        {place ? (
-          <div className="mt-1 flex items-center gap-1.5 text-[13px] text-[#8A8A8A]">
-            <PinIcon className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{place}</span>
-          </div>
-        ) : null}
-      </div>
-    </div>
+        )
+      }
+    />
   );
 }
 
@@ -541,7 +502,7 @@ export default function SavedEventsClient() {
           <div className="mt-8">
             {groups.map((group) => (
               <section key={group.dateKey || group.label} className="mb-7">
-                <h2 className="sticky top-0 z-10 mb-4 bg-bg/95 py-1 text-[14px] font-medium text-[#8A8A8A] backdrop-blur-sm">
+                <h2 className="sticky top-0 z-10 mb-4 bg-bg/95 py-1 text-section backdrop-blur-sm">
                   {group.label}
                 </h2>
                 <ul className="flex flex-col gap-5">

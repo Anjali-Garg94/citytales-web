@@ -163,24 +163,23 @@ export default function ThisMonthSectionClient({
         <>
           {/* 3 — This week: the visual anchor */}
           {thisWeek.length > 0 && (
-            <div id="home-this-week" className="mt-5 scroll-mt-24 lg:mt-7">
-              <div className="px-5 lg:px-20">
-                <SectionLabel label="This week" />
-              </div>
+            <div
+              id="home-this-week"
+              className="this-week-panel mt-5 scroll-mt-24 mx-5 rounded-[22px] px-4 py-5 lg:mt-7 lg:mx-20 lg:rounded-[28px] lg:px-6 lg:py-7"
+            >
+              <SectionLabel label="This week" />
 
               {/* Cards carry their own index so the two columns cascade
                   diagonally rather than row-by-row. */}
-              <div className="mt-5 grid grid-cols-2 gap-3.5 px-5 lg:mt-6 lg:gap-6 lg:px-20">
+              <div className="mt-5 grid grid-cols-2 gap-3.5 lg:mt-6 lg:gap-6">
                 {thisWeek.slice(0, THIS_WEEK_GRID_LIMIT).map((event, i) => (
                   <MonthEventCard key={event.id} event={event} index={i} />
                 ))}
               </div>
 
-              <div className="px-5 lg:px-20">
-                <SeeAllLink href="/explore-events?from=this-week">
-                  See all this Week
-                </SeeAllLink>
-              </div>
+              <SeeAllLink href="/explore-events?from=this-week">
+                See all this Week
+              </SeeAllLink>
             </div>
           )}
 

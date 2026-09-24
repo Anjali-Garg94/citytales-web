@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SectionSort } from "@/lib/api";
@@ -11,11 +9,8 @@ import {
   groupByDate,
 } from "@/lib/placeholder-month-data";
 import CategoryPill from "@/components/CategoryPill";
-import {
-  ClockIcon,
-  PinIcon,
-  SearchIcon,
-} from "@/components/Icons";
+import EventListRow from "@/components/event/EventListRow";
+import { SearchIcon } from "@/components/Icons";
 
 export type ExploreCategory = {
   id: string;
@@ -46,43 +41,6 @@ function dateGroupLabel(isoDate: string): string {
     timeZone: "Asia/Kolkata",
   }).format(d);
   return `${primary} / ${weekday}`;
-}
-
-function EventRow({ event }: { event: MonthEvent }) {
-  return (
-    <Link href={`/events/${event.slug}`} className="flex gap-3.5 no-underline">
-      <div className="relative h-[84px] w-[84px] shrink-0 overflow-hidden rounded-[12px] bg-[#F4F3F1]">
-        <Image
-          src={event.image}
-          alt=""
-          fill
-          sizes="84px"
-          className="object-cover"
-        />
-      </div>
-
-      <div className="min-w-0 flex-1 pt-0.5">
-        <div className="truncate text-[11px] font-semibold tracking-[0.06em] text-[#9A9A9A] uppercase">
-          {event.category}
-        </div>
-        <div className="mt-0.5 line-clamp-2 text-[15px] leading-[1.3] font-semibold text-ink">
-          {event.title}
-        </div>
-        {event.startTime ? (
-          <div className="mt-1.5 flex items-center gap-1.5 text-[13px] text-[#8A8A8A]">
-            <ClockIcon className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{event.startTime}</span>
-          </div>
-        ) : null}
-        {event.venue ? (
-          <div className="mt-1 flex items-center gap-1.5 text-[13px] text-[#8A8A8A]">
-            <PinIcon className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{event.venue}</span>
-          </div>
-        ) : null}
-      </div>
-    </Link>
-  );
 }
 
 /**
@@ -170,11 +128,23 @@ export default function ExploreEventsClient({
     router.push(buildHref({ sort: next }));
   }
 
+  function renderRow(event: MonthEvent) {
+    return (
+      <EventListRow
+        href={`/events/${event.slug}`}
+        image={event.image}
+        title={event.title}
+        category={event.category}
+        categoryVariant="eyebrow"
+        time={event.startTime || undefined}
+        venue={event.venue || undefined}
+      />
+    );
+  }
+
   return (
     <div className="mx-auto max-w-[720px] px-5 pb-16 lg:px-8">
-      <h1 className="text-[22px] leading-tight font-bold tracking-[-0.02em] text-ink lg:text-[26px]">
-        {heading}
-      </h1>
+      <h1 className="text-page">{heading}</h1>
 
       <div
         ref={stripRef}
@@ -246,30 +216,24 @@ export default function ExploreEventsClient({
             <p className="mt-3 text-[15px] font-semibold text-ink">
               No events found
             </p>
-            <p className="mx-auto mt-1.5 max-w-[280px] text-[13px] text-ink-soft">
+            <p className="mx-auto mt-1.5 max-w-[280px] text-meta">
               Try another category.
             </p>
           </div>
         ) : showFlat ? (
           <ul className="flex flex-col gap-5">
             {events.map((event) => (
-              <li key={event.id}>
-                <EventRow event={event} />
-              </li>
+              <li key={event.id}>{renderRow(event)}</li>
             ))}
           </ul>
         ) : (
           groups.map(([date, dayEvents]) => (
             <section key={date} className="mb-7">
-              <h2 className="mb-4 text-[14px] font-medium text-[#8A8A8A]">
-                {dateGroupLabel(date)}
-              </h2>
+              <h2 className="mb-4 text-section">{dateGroupLabel(date)}</h2>
 
               <ul className="flex flex-col gap-5">
                 {dayEvents.map((event) => (
-                  <li key={event.id}>
-                    <EventRow event={event} />
-                  </li>
+                  <li key={event.id}>{renderRow(event)}</li>
                 ))}
               </ul>
             </section>

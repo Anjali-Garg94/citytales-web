@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -10,14 +9,12 @@ import {
   weekdayShort,
   type MonthEvent,
 } from "@/lib/placeholder-month-data";
+import EventThumb from "@/components/event/EventThumb";
 import { BookmarkIcon } from "../Icons";
 import { fadeUp, viewport } from "../motion/variants";
 
 /**
- * This Week card — community-card layout:
- * top row: square photo + category pill, then event name, then date.
- *
- * `index` only drives the reveal delay (two-column cascade).
+ * This Week card — square photo via shared EventThumb, title + date.
  */
 export default function MonthEventCard({
   event,
@@ -61,24 +58,16 @@ export default function MonthEventCard({
         href={`/events/${event.slug}`}
         className="group block px-3.5 py-3.5 no-underline lg:px-4 lg:py-4"
       >
-        <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[14px] lg:h-20 lg:w-20 lg:rounded-2xl">
-          <Image
-            src={event.image}
-            alt=""
-            fill
-            sizes="80px"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+        <div className="transition-transform duration-500 group-hover:scale-[1.03]">
+          <EventThumb src={event.image} variant="card" />
         </div>
 
-        {/* Event name */}
-        <div className="mt-3.5 line-clamp-2 font-serif text-base leading-[1.25] font-medium text-ink lg:mt-4 lg:text-lg">
+        <div className="mt-3.5 line-clamp-2 text-event-title lg:mt-4">
           {event.title}
         </div>
 
-        {/* Date */}
         {dateLabel ? (
-          <div className="mt-1.5 text-[12px] leading-[1.4] text-ink-soft lg:text-[13px]">
+          <div className="mt-1.5 text-meta">
             {dateLabel}
             {event.startTime ? ` · ${event.startTime}` : ""}
           </div>
