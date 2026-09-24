@@ -120,6 +120,21 @@ body {
   width: 100%;
 }
 
+.cta-pill.cta-pill--narrow {
+  gap: 0.5rem;
+  width: 200px;
+  min-height: 40px;
+  height: 40px;
+  padding: 0 1.25rem;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cta-pill.cta-pill--narrow .cta-pill__arrow {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
 .cta-pill:hover:not(:disabled) {
   filter: brightness(1.07) saturate(1.05);
   transform: translateY(-2px);
@@ -154,6 +169,15 @@ body {
     min-height: 42px;
     padding: 0.6rem 1.85rem;
     font-size: 14.5px;
+  }
+
+  .cta-pill.cta-pill--narrow {
+    width: 200px;
+    min-height: 40px;
+    height: 40px;
+    padding: 0 1.5rem;
+    font-size: 15px;
+    font-weight: 600;
   }
 }
 
