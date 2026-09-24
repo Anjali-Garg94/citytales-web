@@ -9,8 +9,8 @@ import {
   dateHeaderParts,
   groupByDate,
 } from "@/lib/placeholder-month-data";
+import CategoryPill from "@/components/CategoryPill";
 import {
-  ChevronLeftIcon,
   ClockIcon,
   PinIcon,
   SearchIcon,
@@ -22,6 +22,13 @@ export type ExploreCategory = {
   label: string;
   image: string;
 };
+
+function toTitleCase(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\b([a-z])/g, (ch) => ch.toUpperCase());
+}
 
 /** "Today / Wednesday" — Luma-style date group header. */
 function dateGroupLabel(isoDate: string): string {
@@ -36,51 +43,6 @@ function dateGroupLabel(isoDate: string): string {
 }
 
 /**
- * Pill chip with optional cyan→purple oval selection ring.
- * Ring is always the same size as the chip padding wrapper so layout
- * never shifts — only the gradient colours toggle.
- */
-function CategoryPill({
-  selected,
-  onClick,
-  children,
-  compact = false,
-  categoryId,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  compact?: boolean;
-  categoryId: string;
-}) {
-  return (
-    <button
-      type="button"
-      data-category-id={categoryId}
-      onClick={onClick}
-      className="shrink-0 rounded-full p-[2px] outline-none"
-      style={{
-        background: selected
-          ? "linear-gradient(to bottom, #00E5FF, #6A1B9A)"
-          : "transparent",
-      }}
-    >
-      <span
-        className={`inline-flex h-10 items-center rounded-full border bg-white text-[13px] font-medium ${
-          compact ? "w-10 justify-center" : "px-3.5"
-        }`}
-        style={{
-          borderColor: selected ? "transparent" : "#E5E5E5",
-          color: selected ? "#3B7FE8" : "#111827",
-        }}
-      >
-        {children}
-      </span>
-    </button>
-  );
-}
-
-/**
  * Explore Events — pill category chips (gradient oval ring when selected)
  * + date-grouped list. Category changes navigate via `?category=`.
  */
@@ -88,14 +50,12 @@ export default function ExploreEventsClient({
   categories,
   events,
   heading = "Discover events",
-  backHref = "/",
   initialCategoryId = "all",
   from,
 }: {
   categories: ExploreCategory[];
   events: MonthEvent[];
   heading?: string;
-  backHref?: string;
   initialCategoryId?: string | "all";
   from?: string;
 }) {
@@ -134,14 +94,6 @@ export default function ExploreEventsClient({
   const row1 = categories.slice(0, splitAt);
   const row2 = categories.slice(splitAt);
 
-  function goBack() {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-      return;
-    }
-    router.push(backHref);
-  }
-
   function selectCategory(id: string | "all") {
     if (id === activeCategoryId) return;
     setPendingId(id);
@@ -155,23 +107,13 @@ export default function ExploreEventsClient({
 
   return (
     <div className="mx-auto max-w-[720px] px-5 pb-16 lg:px-8">
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={goBack}
-          aria-label="Back"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink transition hover:border-ink"
-        >
-          <ChevronLeftIcon className="h-5 w-5" />
-        </button>
-        <h1 className="text-[22px] leading-tight font-bold tracking-[-0.02em] text-ink lg:text-[26px]">
-          {heading}
-        </h1>
-      </div>
+      <h1 className="text-[22px] leading-tight font-bold tracking-[-0.02em] text-ink lg:text-[26px]">
+        {heading}
+      </h1>
 
       <div
         ref={stripRef}
-        className="no-scrollbar mt-4 -mx-5 overflow-x-auto px-5 lg:-mx-8 lg:px-8"
+        className="no-scrollbar mt-3 -mx-5 overflow-x-auto px-5 lg:-mx-8 lg:px-8"
       >
         <div className="flex w-max flex-col gap-2.5 py-1">
           <div className="flex gap-2">
@@ -190,7 +132,7 @@ export default function ExploreEventsClient({
                 selected={activeCategoryId === cat.id}
                 onClick={() => selectCategory(cat.id)}
               >
-                <span className="whitespace-nowrap">{cat.name}</span>
+                <span className="whitespace-nowrap">{toTitleCase(cat.name)}</span>
               </CategoryPill>
             ))}
           </div>
@@ -202,7 +144,7 @@ export default function ExploreEventsClient({
                 selected={activeCategoryId === cat.id}
                 onClick={() => selectCategory(cat.id)}
               >
-                <span className="whitespace-nowrap">{cat.name}</span>
+                <span className="whitespace-nowrap">{toTitleCase(cat.name)}</span>
               </CategoryPill>
             ))}
           </div>

@@ -89,7 +89,92 @@ body {
   animation: marquee-left linear infinite;
 }
 
+/* Primary CTA pill — electric-blue, Apple-soft finish */
+.cta-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 40px;
+  padding: 0.55rem 1.65rem;
+  border-radius: 9999px;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  background-image: linear-gradient(180deg, #5ec8ff 0%, #2aa8f0 42%, #0f7fd4 100%);
+  box-shadow: none;
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cta-pill--block {
+  display: flex;
+  width: 100%;
+}
+
+.cta-pill:hover:not(:disabled) {
+  filter: brightness(1.07) saturate(1.05);
+  transform: translateY(-2px);
+  box-shadow: none;
+}
+
+.cta-pill:active:not(:disabled) {
+  filter: brightness(1);
+  transform: translateY(0) scale(0.97);
+  box-shadow: none;
+}
+
+.cta-pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+.cta-pill__arrow {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cta-pill:hover:not(:disabled) .cta-pill__arrow {
+  transform: translateX(4px);
+}
+
+@media (min-width: 1024px) {
+  .cta-pill {
+    min-height: 42px;
+    padding: 0.6rem 1.85rem;
+    font-size: 14.5px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .cta-pill,
+  .cta-pill__arrow {
+    transition: none;
+  }
+
+  .cta-pill:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .cta-pill:hover:not(:disabled) .cta-pill__arrow {
+    transform: none;
+  }
+
+  .cta-pill:active:not(:disabled) {
+    transform: none;
+  }
+
   .animate-marquee-up,
   .animate-marquee-down,
   .animate-marquee-left {

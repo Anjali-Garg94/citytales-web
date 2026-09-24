@@ -21,20 +21,6 @@ const TABS = [
 ];
 type TabId = (typeof TABS)[number]["id"];
 
-function ChevronDownIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path
-        d="M6 9L12 15L18 9"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function LiveMusicCard({
   event,
   showCategory = true,
@@ -308,7 +294,7 @@ export default function LiveMusicSection({
         <div
           className={`relative z-10 mx-auto max-w-[720px] px-5 lg:px-8 ${
             isPage
-              ? "pt-4 pb-2 lg:pt-6 lg:pb-2.5"
+              ? "pt-3 pb-2 lg:pt-4 lg:pb-2.5"
               : "pt-12 pb-2 lg:pt-16 lg:pb-2.5"
           }`}
         >
@@ -331,7 +317,7 @@ export default function LiveMusicSection({
             </div>
           ) : null}
 
-          <div className={isPage ? "mt-10 lg:mt-14" : ""}>
+          <div className={isPage ? "mt-4 lg:mt-5" : ""}>
             {isPage ? (
               <h1 className="text-[18px] leading-[1.1] font-bold tracking-[-0.02em] text-white lg:text-[22px]">
                 Live Music &amp; Parties
@@ -352,16 +338,13 @@ export default function LiveMusicSection({
                   type="button"
                   onClick={() => setTab(t.id)}
                   aria-pressed={active}
-                  className={`flex items-center gap-1.5 rounded-full px-4 py-2.5 text-[13px] font-semibold transition ${
+                  className={`rounded-full px-4 py-2.5 text-[13px] font-semibold transition ${
                     active
                       ? "bg-white text-ink"
                       : "bg-white/10 text-white ring-1 ring-white/20 hover:bg-white/15"
                   }`}
                 >
                   {t.label}
-                  {t.id === "weekend" ? (
-                    <ChevronDownIcon className="h-3.5 w-3.5" />
-                  ) : null}
                 </button>
               );
             })}
@@ -384,7 +367,7 @@ export default function LiveMusicSection({
         ) : (
           <div className="flex flex-col gap-3 lg:gap-3.5">
             {events.map((event) => (
-              <LiveMusicCard key={event.id} event={event} showCategory />
+              <LiveMusicCard key={event.id} event={event} showCategory={false} />
             ))}
           </div>
         )}

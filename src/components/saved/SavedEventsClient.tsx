@@ -2,12 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthContext";
 import {
   BookmarkIcon,
-  ChevronLeftIcon,
   ClockIcon,
   PinIcon,
   ShareIcon,
@@ -156,10 +155,27 @@ export default function SavedEventsClient() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
   const [clearing, setClearing] = useState(false);
   const [error, setError] = useState("");
 
+  const pullStartY = useRef<number | null>(null);
+  const pullDistanceRef = useRef(0);
+  const refreshingRef = useRef(false);
+  const loadingRef = useRef(false);
+
+  const PULL_THRESHOLD = 72;
+  const PULL_MAX = 112;
+
   const cityId = user?.cityId || "";
+
+  useEffect(() => {
+    refreshingRef.current = refreshing;
+  }, [refreshing]);
+
+  useEffect(() => {
+    loadingRef.current = loading;
+  }, [loading]);
 
   /** Session is gone after failed refresh — clear client auth and go to login. */
   async function handleAuthExpired() {
@@ -268,9 +284,67 @@ export default function SavedEventsClient() {
   }
 
   async function onRefresh() {
+    if (refreshingRef.current || loadingRef.current) return;
     setRefreshing(true);
     await load(status, { soft: true });
   }
+
+  useEffect(() => {
+    function atTop() {
+      return (
+        (typeof window !== "undefined" ? window.scrollY : 0) <= 2 &&
+        (document.documentElement.scrollTop || document.body.scrollTop) <= 2
+      );
+    }
+
+    function onTouchStart(e: TouchEvent) {
+      if (refreshingRef.current || loadingRef.current) return;
+      if (!atTop()) {
+        pullStartY.current = null;
+        return;
+      }
+      pullStartY.current = e.touches[0]?.clientY ?? null;
+    }
+
+    function onTouchMove(e: TouchEvent) {
+      if (pullStartY.current == null) return;
+      if (!atTop() && pullDistanceRef.current === 0) {
+        pullStartY.current = null;
+        return;
+      }
+      const y = e.touches[0]?.clientY ?? 0;
+      const dy = y - pullStartY.current;
+      if (dy <= 0) {
+        pullDistanceRef.current = 0;
+        setPullDistance(0);
+        return;
+      }
+      const damped = Math.min(dy * 0.42, PULL_MAX);
+      pullDistanceRef.current = damped;
+      setPullDistance(damped);
+    }
+
+    function onTouchEnd() {
+      if (pullStartY.current == null) return;
+      const shouldRefresh = pullDistanceRef.current >= PULL_THRESHOLD;
+      pullStartY.current = null;
+      pullDistanceRef.current = 0;
+      setPullDistance(0);
+      if (shouldRefresh) void onRefresh();
+    }
+
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd);
+    window.addEventListener("touchcancel", onTouchEnd);
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, load]);
 
   async function loadMoreExpired() {
     if (loadingMore || expiredLast) return;
@@ -331,7 +405,49 @@ export default function SavedEventsClient() {
   }
 
   return (
-    <div>
+    <div className="relative">
+      {/* Pull-to-refresh indicator */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center overflow-hidden"
+        style={{
+          height: refreshing ? 40 : pullDistance,
+          transition: pullDistance === 0 && !refreshing ? "height 180ms ease" : undefined,
+        }}
+      >
+        <div
+          className={`mt-2 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-[0_4px_14px_-4px_rgba(30,26,22,0.28)] ring-1 ring-line ${
+            refreshing || pullDistance >= PULL_THRESHOLD ? "opacity-100" : "opacity-70"
+          }`}
+          style={{
+            transform: `scale(${refreshing ? 1 : Math.min(0.55 + pullDistance / PULL_MAX, 1)})`,
+          }}
+        >
+          <span
+            className={`block h-4 w-4 rounded-full border-2 border-ink/15 border-t-accent ${
+              refreshing || pullDistance >= PULL_THRESHOLD ? "animate-spin" : ""
+            }`}
+            style={
+              refreshing
+                ? undefined
+                : {
+                    transform: `rotate(${(pullDistance / PULL_MAX) * 270}deg)`,
+                  }
+            }
+          />
+        </div>
+      </div>
+
+      <div
+        style={{
+          transform:
+            pullDistance > 0 || refreshing
+              ? `translateY(${refreshing ? 36 : pullDistance * 0.85}px)`
+              : undefined,
+          transition:
+            pullDistance === 0 && !refreshing ? "transform 180ms ease" : undefined,
+        }}
+      >
       {/* Status filter */}
       <div className="relative mt-6">
         <button
@@ -393,17 +509,6 @@ export default function SavedEventsClient() {
           </button>
         </div>
       ) : null}
-
-      <div className="mt-2 flex justify-end">
-        <button
-          type="button"
-          onClick={() => void onRefresh()}
-          disabled={refreshing || loading}
-          className="text-[12px] font-semibold text-accent disabled:opacity-50"
-        >
-          {refreshing ? "Refreshing…" : "Refresh"}
-        </button>
-      </div>
 
       {error ? (
         <p className="mt-6 text-[14px] text-[#C23B3B]">{error}</p>
@@ -477,26 +582,7 @@ export default function SavedEventsClient() {
           ) : null}
         </div>
       )}
+      </div>
     </div>
-  );
-}
-
-export function SavedEventsBackButton() {
-  const router = useRouter();
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        if (typeof window !== "undefined" && window.history.length > 1) {
-          router.back();
-          return;
-        }
-        router.push("/");
-      }}
-      aria-label="Back"
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink transition hover:border-ink"
-    >
-      <ChevronLeftIcon className="h-5 w-5" />
-    </button>
   );
 }

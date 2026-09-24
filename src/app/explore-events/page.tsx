@@ -17,22 +17,19 @@ type SectionFrom = "this-week" | "next-week" | "later";
 
 const SECTION_BY_FROM: Record<
   SectionFrom,
-  { key: string; heading: string; backHref: string }
+  { key: string; heading: string }
 > = {
   "this-week": {
     key: "THIS_WEEK",
-    heading: "This Week",
-    backHref: "/#home-this-week",
+    heading: "This week",
   },
   "next-week": {
     key: "NEXT_WEEK",
     heading: "Next week",
-    backHref: "/#home-next-week",
   },
   later: {
     key: "AFTER_NEXT_WEEK",
     heading: "Later this month",
-    backHref: "/#home-later",
   },
 };
 
@@ -67,12 +64,6 @@ export default async function ExploreEventsPage({
       ? selectedCategory.name
       : "Discover events";
 
-  const backHref = sectionFrom
-    ? sectionFrom.backHref
-    : categoryId
-      ? "/#home-pick-vibe"
-      : "/";
-
   // Home / Discover category pick → dedicated category endpoint.
   // Week CTAs keep the section API (optionally filtered by category).
   const events = categoryId && !sectionFrom
@@ -92,12 +83,11 @@ export default async function ExploreEventsPage({
 
   return (
     <PageShell>
-      <section className="py-6 lg:py-10">
+      <section className="-mt-2 pt-0 pb-6 lg:-mt-3 lg:pb-8">
         <ExploreEventsClient
           categories={tiles}
           events={events}
           heading={heading}
-          backHref={backHref}
           initialCategoryId={categoryId ?? "all"}
           from={from}
         />

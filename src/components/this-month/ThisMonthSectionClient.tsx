@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { BUSY_THRESHOLD, type MonthEvent } from "@/lib/placeholder-month-data";
+import CategoryPill from "@/components/CategoryPill";
 import { ArrowRightIcon } from "../Icons";
 import RevealGroup from "../motion/RevealGroup";
 import RevealItem from "../motion/RevealItem";
@@ -23,7 +24,7 @@ function SectionLabel({ label, note }: { label: string; note?: string }) {
   return (
     <RevealGroup stagger={0.08}>
       <RevealItem>
-        <h3 className="font-serif text-[17px] font-medium text-ink lg:text-[19px]">
+        <h3 className="font-serif text-[15px] font-medium text-ink lg:text-[17px]">
           {label}
         </h3>
       </RevealItem>
@@ -81,7 +82,11 @@ export default function ThisMonthSectionClient({
   const filter = (events: MonthEvent[]) =>
     activeCategory === ALL
       ? events
-      : events.filter((e) => e.category === activeCategory);
+      : events.filter(
+          (e) =>
+            e.category.trim().toLowerCase() ===
+            activeCategory.trim().toLowerCase(),
+        );
 
   const thisWeek = filter(allThisWeek);
   const nextUp = filter(allNextUp);
@@ -116,20 +121,17 @@ export default function ThisMonthSectionClient({
         >
           {chips.map((chip) => {
             const active = chip === activeCategory;
+            const isAll = chip === ALL;
             return (
-              <button
+              <CategoryPill
                 key={chip}
-                type="button"
+                categoryId={chip}
+                selected={active}
                 onClick={() => setActiveCategory(chip)}
-                aria-pressed={active}
-                className={`shrink-0 rounded-full px-4 py-2.5 text-[13px] font-medium whitespace-nowrap transition ${
-                  active
-                    ? "bg-ink text-white"
-                    : "bg-[#F1EFEC] text-ink-soft hover:bg-[#E6E2DB] hover:text-ink"
-                }`}
+                compact={isAll}
               >
                 {chip}
-              </button>
+              </CategoryPill>
             );
           })}
         </motion.div>
@@ -161,9 +163,9 @@ export default function ThisMonthSectionClient({
         <>
           {/* 3 — This week: the visual anchor */}
           {thisWeek.length > 0 && (
-            <div id="home-this-week" className="mt-9 scroll-mt-24 lg:mt-14">
+            <div id="home-this-week" className="mt-5 scroll-mt-24 lg:mt-7">
               <div className="px-5 lg:px-20">
-                <SectionLabel label="This Week" />
+                <SectionLabel label="This week" />
               </div>
 
               {/* Cards carry their own index so the two columns cascade

@@ -30,11 +30,9 @@ export default async function ThisWeek() {
             Organisers are still adding what&#39;s on. Check back soon — or list
             your own event.
           </div>
-          <Link
-            href="/for-organisers"
-            className="mt-4 inline-block text-[13px] font-semibold tracking-[0.03em] text-accent no-underline hover:text-accent-deep"
-          >
-            Become an organiser →
+          <Link href="/for-organisers" className="cta-pill mt-4">
+            Become an organiser
+            <ArrowRightIcon className="cta-pill__arrow" />
           </Link>
         </div>
       ) : (

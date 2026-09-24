@@ -334,7 +334,7 @@ export default function AuthFlow({
             type="button"
             disabled={busy || phone.length !== 10}
             onClick={() => void submitPhone()}
-            className="mt-1 w-fit self-center rounded-full bg-accent px-7 py-2.5 text-[14px] font-semibold text-white disabled:opacity-60"
+            className="cta-pill mt-1 self-center"
           >
             {busy ? "Sending…" : "Send OTP"}
           </button>
@@ -375,7 +375,7 @@ export default function AuthFlow({
             type="button"
             disabled={busy || otp.replace(/\D/g, "").length !== 6}
             onClick={() => void submitOtp()}
-            className="rounded-full bg-accent px-4 py-2.5 text-[14px] font-semibold text-white disabled:opacity-60"
+            className="cta-pill cta-pill--block"
           >
             {busy ? "Verifying…" : "Continue"}
           </button>
@@ -449,7 +449,7 @@ export default function AuthFlow({
             type="button"
             disabled={busy || name.trim().length < 2 || !cityId}
             onClick={() => void submitProfile()}
-            className="rounded-full bg-accent px-4 py-2.5 text-[14px] font-semibold text-white disabled:opacity-60"
+            className="cta-pill cta-pill--block"
           >
             {busy ? "Saving…" : "Continue"}
           </button>

@@ -55,12 +55,9 @@ export default function Hero() {
         <p className="mt-3 max-w-[320px] text-sm leading-[1.6] text-ink-soft lg:mt-5 lg:max-w-[380px] lg:text-[14.5px]">
           Live music, workshops, food, fitness and many more.
         </p>
-        <a
-          href="/explore-events"
-          className="mt-5 flex w-fit items-center gap-2 rounded-full bg-accent px-6 py-2 text-[14px] font-semibold tracking-[0.01em] text-white no-underline transition hover:gap-3 hover:brightness-110 lg:mt-7 lg:px-7 lg:py-2.5 lg:text-[15px]"
-        >
+        <a href="/explore-events" className="cta-pill mt-5 lg:mt-7">
           Start exploring
-          <ArrowRightIcon className="h-4 w-4" />
+          <ArrowRightIcon className="cta-pill__arrow" />
         </a>
       </motion.div>
 

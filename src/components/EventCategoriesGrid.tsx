@@ -14,14 +14,7 @@ export type CategoryTile = {
 };
 
 /**
- * The mood tiles. Split out from EventCategories so that section stays an
- * async server component and only the reveal runs on the client.
- *
- * These are the one place on the page where pictures get the full image
- * treatment rather than a card-level fade: they're large and deliberate, and
- * the tile's existing `overflow-hidden` gives the movement something to be
- * masked by. The tile fades as a unit while the photo slides up inside it —
- * the frame stays put, the picture arrives into it.
+ * Pick your Vibe tiles — smaller photo on top, category name below.
  */
 export default function EventCategoriesGrid({
   tiles,
@@ -30,7 +23,7 @@ export default function EventCategoriesGrid({
 }) {
   return (
     <motion.div
-      className="mt-5 grid grid-cols-2 gap-3.5 lg:mt-7 lg:grid-cols-4 lg:gap-5"
+      className="mt-5 grid grid-cols-2 gap-x-3 gap-y-4 lg:mt-7 lg:grid-cols-4 lg:gap-x-4 lg:gap-y-5"
       initial="hidden"
       whileInView="visible"
       viewport={viewport}
@@ -40,22 +33,21 @@ export default function EventCategoriesGrid({
         <motion.div key={tile.id} variants={fadeIn()}>
           <Link
             href={`/explore-events?category=${encodeURIComponent(tile.id)}`}
-            className="group relative block aspect-[4/3] overflow-hidden rounded-[8px] no-underline lg:rounded-[10px]"
+            className="group block no-underline"
           >
-            <RevealImage inGroup>
-              <Image
-                src={tile.image}
-                alt=""
-                fill
-                sizes="(min-width: 1024px) 25vw, 50vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-[1.06]"
-              />
-            </RevealImage>
-
-            <div className="absolute top-0 right-0 left-0 px-3.5 pt-2.5 pb-3.5 lg:px-4 lg:pt-3">
-              <div className="font-serif text-[18px] leading-[1.15] font-semibold text-ink lg:text-[20px]">
-                {tile.name}
-              </div>
+            <div className="relative aspect-[16/10] overflow-hidden rounded-[8px] lg:rounded-[10px]">
+              <RevealImage inGroup>
+                <Image
+                  src={tile.image}
+                  alt=""
+                  fill
+                  sizes="(min-width: 1024px) 22vw, 45vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-[1.06]"
+                />
+              </RevealImage>
+            </div>
+            <div className="mt-2 font-serif text-[15px] leading-[1.2] font-semibold text-ink lg:mt-2.5 lg:text-[17px]">
+              {tile.name}
             </div>
           </Link>
         </motion.div>

@@ -1,6 +1,13 @@
 import { getEventCategories, getMonthSectionEvents } from "@/lib/api";
 import ThisMonthSectionClient from "./ThisMonthSectionClient";
 
+function toTitleCase(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\b([a-z])/g, (ch) => ch.toUpperCase());
+}
+
 /**
  * Server wrapper: fetches the three live "This Month" sections plus the full
  * category taxonomy in parallel, and hands them to the client component,
@@ -22,10 +29,11 @@ export default async function ThisMonthSection() {
     getEventCategories(),
   ]);
 
-  // Uppercased to match the category labels getMonthSectionEvents already
-  // puts on each event (see getEventCategoryNames in src/lib/api.ts).
+  // Title case for chips; filter compares case-insensitively against event labels.
   const categories = [
-    ...new Set(eventCategories.map((c) => c.label.toUpperCase())),
+    ...new Set(
+      eventCategories.map((c) => toTitleCase(c.label.trim() || c.name)),
+    ),
   ];
 
   return (

@@ -91,7 +91,7 @@ export default function HeaderMobileMenu() {
                 <Link
                   href="/signup"
                   onClick={() => setOpen(false)}
-                  className="flex-1 rounded-full bg-accent px-4 py-2.5 text-center text-[13px] font-semibold text-white no-underline"
+                  className="cta-pill flex-1"
                 >
                   Sign up
                 </Link>
