@@ -416,6 +416,113 @@ export async function getMonthSectionEvents(
   }
 }
 
+/**
+ * Events for one category — prefers GET /api/v1/event/category/{categoryId}.
+ * That path currently 500s on the live API, so we fall back to merging
+ * section feeds filtered by categoryId (THIS_WEEK / NEXT_WEEK / …).
+ */
+export async function getEventsByCategory(
+  categoryId: string,
+  size = 60,
+): Promise<MonthEvent[]> {
+  const categoryNames = await getEventCategoryNames();
+
+  try {
+    const params = new URLSearchParams({
+      cityId: CITY_ID,
+      page: "0",
+      size: String(size),
+    });
+    const url = `${API_BASE_URL}/api/v1/event/category/${encodeURIComponent(
+      categoryId,
+    )}?${params.toString()}`;
+
+    const res = await fetch(url, { next: { revalidate: 300 } });
+    if (res.ok) {
+      const json: unknown = await res.json();
+      const mapped = mapApiEventsToMonthEvents(
+        extractApiEventList(json),
+        categoryNames,
+        categoryId,
+      );
+      if (mapped.length > 0) return mapped;
+      console.warn(
+        `[category:${categoryId}] Endpoint returned OK but no mappable events — using section fallback`,
+      );
+    } else {
+      console.error(
+        `[category:${categoryId}] API responded ${res.status} ${res.statusText} — using section fallback`,
+      );
+    }
+  } catch (error) {
+    console.error(
+      `[category:${categoryId}] Fetch failed — using section fallback:`,
+      error instanceof Error ? error.message : error,
+    );
+  }
+
+  // Fallback: same filter the app uses on section endpoints.
+  const batches = await Promise.all([
+    getMonthSectionEvents("THIS_WEEK", size, categoryId),
+    getMonthSectionEvents("NEXT_WEEK", size, categoryId),
+    getMonthSectionEvents("AFTER_NEXT_WEEK", size, categoryId),
+    getMonthSectionEvents("UPCOMING", size, categoryId),
+  ]);
+
+  const seen = new Set<string>();
+  return batches.flat().filter((e) => {
+    if (seen.has(e.id)) return false;
+    seen.add(e.id);
+    return true;
+  });
+}
+
+/** Pull an ApiEvent[] out of array / {events} / {content} / nested {event} rows. */
+function extractApiEventList(json: unknown): ApiEvent[] {
+  const rows: unknown[] = Array.isArray(json)
+    ? json
+    : Array.isArray((json as { events?: unknown })?.events)
+      ? ((json as { events: unknown[] }).events)
+      : Array.isArray((json as { content?: unknown })?.content)
+        ? ((json as { content: unknown[] }).content)
+        : [];
+
+  return rows
+    .map((item) => {
+      if (typeof item !== "object" || item === null) return null;
+      const row = item as Record<string, unknown>;
+      if (typeof row.event === "object" && row.event !== null) {
+        return row.event as ApiEvent;
+      }
+      return item as ApiEvent;
+    })
+    .filter((e): e is ApiEvent => typeof e?.title === "string" && typeof e?.id === "string");
+}
+
+function mapApiEventsToMonthEvents(
+  events: ApiEvent[],
+  categoryNames: Map<string, string>,
+  fallbackCategoryId?: string,
+): MonthEvent[] {
+  return events
+    .map<MonthEvent>((e) => {
+      const catId = e.categoryIds?.[0] ?? fallbackCategoryId;
+      const firstDate = e.dates?.[0];
+      return {
+        id: e.id,
+        slug: e.id,
+        title: e.title.trim(),
+        venue: shortVenue(e.venue?.address, e.venue?.city),
+        category: (catId && categoryNames.get(catId)) || "EVENT",
+        date: formatEventDateISO(e.startDate ?? firstDate?.date),
+        startTime: formatTime(firstDate?.startTime),
+        endTime: formatTime(firstDate?.endTime) || undefined,
+        image: e.imageUrls?.coverUrlS3Path || "/images/events/hero-wide.jpg",
+      };
+    })
+    .filter((e) => e.date !== "");
+}
+
 /* ------------------------------------------------------------------ *
  * Live music & parties — This weekend / All
  * ------------------------------------------------------------------ */

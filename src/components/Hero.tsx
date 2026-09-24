@@ -56,7 +56,7 @@ export default function Hero() {
           Live music, workshops, food, fitness and many more.
         </p>
         <a
-          href="#whats-on"
+          href="/explore-events"
           className="mt-5 flex w-fit items-center gap-2 rounded-full bg-accent px-6 py-2 text-[14px] font-semibold tracking-[0.01em] text-white no-underline transition hover:gap-3 hover:brightness-110 lg:mt-7 lg:px-7 lg:py-2.5 lg:text-[15px]"
         >
           Start exploring

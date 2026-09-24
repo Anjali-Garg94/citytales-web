@@ -38,7 +38,7 @@ export default function TodayEventsGrid({ events }: { events: TodayEvent[] }) {
         const body = (
           <>
             <div className="mb-[9px] flex items-center lg:mb-[11px]">
-              <span className="text-[11px] font-semibold text-accent lg:text-xs">
+              <span className="text-[11px] font-semibold text-ink-soft lg:text-xs">
                 {event.time || "All day"}
               </span>
             </div>

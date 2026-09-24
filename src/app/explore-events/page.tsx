@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import ExploreEventsClient from "@/components/explore/ExploreEventsClient";
 import PageShell from "@/components/PageShell";
-import { getEventCategories, getMonthSectionEvents } from "@/lib/api";
+import {
+  getEventCategories,
+  getEventsByCategory,
+  getMonthSectionEvents,
+} from "@/lib/api";
 import { categoryCoverImage } from "@/lib/category-images";
 
 export const metadata: Metadata = {
@@ -33,11 +37,11 @@ const SECTION_BY_FROM: Record<
 };
 
 /**
- * Discover events — categories on top + section feed.
+ * Discover events — categories on top + feed.
  *
- * `?from=this-week|next-week|later` — section key + heading
- * `?category=<id>` — filters via categoryId on the section API; chip selected
- * Pick your Vibe (category only) uses key ALL.
+ * `?from=this-week|next-week|later` — section key (+ optional categoryId)
+ * `?category=<id>` alone (Pick your Vibe / chip) — GET /event/category/{id}
+ * Menu Discover with no params — THIS_WEEK
  */
 export default async function ExploreEventsPage({
   searchParams,
@@ -57,14 +61,6 @@ export default async function ExploreEventsPage({
       ? SECTION_BY_FROM[from as SectionFrom]
       : null;
 
-  // Section CTA → that week's key. Category from vibe tiles → ALL.
-  // Menu Discover with no category → THIS_WEEK.
-  const sectionKey = sectionFrom
-    ? sectionFrom.key
-    : categoryId
-      ? "ALL"
-      : "THIS_WEEK";
-
   const heading = sectionFrom
     ? sectionFrom.heading
     : selectedCategory
@@ -77,7 +73,15 @@ export default async function ExploreEventsPage({
       ? "/#home-pick-vibe"
       : "/";
 
-  const events = await getMonthSectionEvents(sectionKey, 60, categoryId);
+  // Home / Discover category pick → dedicated category endpoint.
+  // Week CTAs keep the section API (optionally filtered by category).
+  const events = categoryId && !sectionFrom
+    ? await getEventsByCategory(categoryId, 60)
+    : await getMonthSectionEvents(
+        sectionFrom?.key ?? "THIS_WEEK",
+        60,
+        categoryId,
+      );
 
   const tiles = categories.map((c) => ({
     id: c.id,

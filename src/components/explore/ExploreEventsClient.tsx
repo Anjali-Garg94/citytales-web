@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { MonthEvent } from "@/lib/placeholder-month-data";
 import {
   dateHeaderParts,
@@ -36,8 +36,53 @@ function dateGroupLabel(isoDate: string): string {
 }
 
 /**
- * Explore Events — category chips trigger a server fetch via URL
- * (`?category=` + optional `?from=`). List is already filtered by the API.
+ * Pill chip with optional cyan→purple oval selection ring.
+ * Ring is always the same size as the chip padding wrapper so layout
+ * never shifts — only the gradient colours toggle.
+ */
+function CategoryPill({
+  selected,
+  onClick,
+  children,
+  compact = false,
+  categoryId,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  compact?: boolean;
+  categoryId: string;
+}) {
+  return (
+    <button
+      type="button"
+      data-category-id={categoryId}
+      onClick={onClick}
+      className="shrink-0 rounded-full p-[2px] outline-none"
+      style={{
+        background: selected
+          ? "linear-gradient(to bottom, #00E5FF, #6A1B9A)"
+          : "transparent",
+      }}
+    >
+      <span
+        className={`inline-flex h-10 items-center rounded-full border bg-white text-[13px] font-medium ${
+          compact ? "w-10 justify-center" : "px-3.5"
+        }`}
+        style={{
+          borderColor: selected ? "transparent" : "#E5E5E5",
+          color: selected ? "#3B7FE8" : "#111827",
+        }}
+      >
+        {children}
+      </span>
+    </button>
+  );
+}
+
+/**
+ * Explore Events — pill category chips (gradient oval ring when selected)
+ * + date-grouped list. Category changes navigate via `?category=`.
  */
 export default function ExploreEventsClient({
   categories,
@@ -55,12 +100,33 @@ export default function ExploreEventsClient({
   from?: string;
 }) {
   const router = useRouter();
+  const stripRef = useRef<HTMLDivElement>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const activeCategoryId = pendingId ?? initialCategoryId;
 
   useEffect(() => {
     setPendingId(null);
   }, [initialCategoryId]);
+
+  // Keep the selected chip in view (e.g. arrived from home with a right-side category).
+  useEffect(() => {
+    const strip = stripRef.current;
+    if (!strip || activeCategoryId === "all") return;
+
+    const chip = strip.querySelector<HTMLElement>(
+      `[data-category-id="${CSS.escape(activeCategoryId)}"]`,
+    );
+    if (!chip) return;
+
+    // Defer until layout is ready after navigation.
+    requestAnimationFrame(() => {
+      chip.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+    });
+  }, [activeCategoryId, categories]);
 
   const groups = useMemo(() => groupByDate(events), [events]);
 
@@ -87,24 +153,6 @@ export default function ExploreEventsClient({
     router.push(qs ? `/explore-events?${qs}` : "/explore-events");
   }
 
-  function categoryChip(cat: ExploreCategory) {
-    const active = activeCategoryId === cat.id;
-    return (
-      <button
-        key={cat.id}
-        type="button"
-        onClick={() => selectCategory(cat.id)}
-        className={`inline-flex h-10 shrink-0 items-center rounded-full border px-3.5 text-[13px] font-medium outline-none transition ${
-          active
-            ? "border-ink bg-ink text-white"
-            : "border-[#E5E5E5] bg-white text-ink"
-        }`}
-      >
-        <span className="whitespace-nowrap">{cat.name}</span>
-      </button>
-    );
-  }
-
   return (
     <div className="mx-auto max-w-[720px] px-5 pb-16 lg:px-8">
       <div className="flex items-center gap-3">
@@ -121,23 +169,43 @@ export default function ExploreEventsClient({
         </h1>
       </div>
 
-      <div className="no-scrollbar mt-4 -mx-5 overflow-x-auto px-5 lg:-mx-8 lg:px-8">
+      <div
+        ref={stripRef}
+        className="no-scrollbar mt-4 -mx-5 overflow-x-auto px-5 lg:-mx-8 lg:px-8"
+      >
         <div className="flex w-max flex-col gap-2.5 py-1">
           <div className="flex gap-2">
-            <button
-              type="button"
+            <CategoryPill
+              categoryId="all"
+              selected={activeCategoryId === "all"}
               onClick={() => selectCategory("all")}
-              className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-[13px] font-medium outline-none transition ${
-                activeCategoryId === "all"
-                  ? "border-ink bg-ink text-white"
-                  : "border-[#E5E5E5] bg-white text-ink"
-              }`}
+              compact
             >
               All
-            </button>
-            {row1.map(categoryChip)}
+            </CategoryPill>
+            {row1.map((cat) => (
+              <CategoryPill
+                key={cat.id}
+                categoryId={cat.id}
+                selected={activeCategoryId === cat.id}
+                onClick={() => selectCategory(cat.id)}
+              >
+                <span className="whitespace-nowrap">{cat.name}</span>
+              </CategoryPill>
+            ))}
           </div>
-          <div className="flex gap-2">{row2.map(categoryChip)}</div>
+          <div className="flex gap-2">
+            {row2.map((cat) => (
+              <CategoryPill
+                key={cat.id}
+                categoryId={cat.id}
+                selected={activeCategoryId === cat.id}
+                onClick={() => selectCategory(cat.id)}
+              >
+                <span className="whitespace-nowrap">{cat.name}</span>
+              </CategoryPill>
+            ))}
+          </div>
         </div>
       </div>
 
