@@ -2,23 +2,30 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "./auth/AuthContext";
 import { CloseIcon, MenuIcon, PinIcon } from "./Icons";
 
 /** Launch city — matches CITY_ID in src/lib/api.ts. No switcher wired up yet. */
 const CITY_NAME = "Ludhiana";
 
-const PRIMARY_LINKS = [
-  { label: "Discover events", href: "/explore-events" },
-  { label: "Saved Events", href: "/saved-events" },
-] as const;
+type MenuLink = { label: string; href: string };
 
 /**
  * Mobile menu — one dense frosted glass panel.
  */
 export default function HeaderMobileMenu() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
   const { user, loading, logout } = useAuth();
+  const onHome = pathname === "/";
+  const onDiscover =
+    pathname === "/explore-events" || pathname.startsWith("/explore-events/");
+
+  const links: MenuLink[] = [];
+  if (!onHome) links.push({ label: "Home", href: "/" });
+  if (!onDiscover) links.push({ label: "Discover events", href: "/explore-events" });
+  links.push({ label: "Saved Events", href: "/saved-events" });
 
   useEffect(() => {
     if (!open) return;
@@ -57,7 +64,7 @@ export default function HeaderMobileMenu() {
           <div className="glass-menu-panel fixed top-[68px] right-4 z-50 w-[min(280px,calc(100vw-2rem))] px-4 py-4 sm:right-5">
             <nav>
               <ul className="flex flex-col">
-                {PRIMARY_LINKS.map((link) => (
+                {links.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}

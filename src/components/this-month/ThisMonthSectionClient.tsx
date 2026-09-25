@@ -412,7 +412,7 @@ export default function ThisMonthSectionClient({ bySort, categories }: Props) {
               className="month-list-panel mt-10 scroll-mt-24 mx-2 rounded-[22px] px-4 py-5 lg:mt-16 lg:mx-8 lg:rounded-[28px] lg:px-6 lg:py-7"
             >
               <SectionHeader
-                label="Later this month"
+                label="Later"
                 sort={sort}
                 onSortChange={setSort}
               />

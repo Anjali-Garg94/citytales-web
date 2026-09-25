@@ -7,6 +7,7 @@ import LiveMusicWeekend from "@/components/weekend/LiveMusicWeekend";
 import EverythingOnMarquee from "@/components/EverythingOnMarquee";
 import OrganisersMarquee from "@/components/OrganisersMarquee";
 import CreateEventCta from "@/components/CreateEventCta";
+import CommunityCount from "@/components/CommunityCount";
 import BrandPromise from "@/components/BrandPromise";
 import Footer from "@/components/Footer";
 
@@ -16,6 +17,7 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <Hero />
+        <CommunityCount />
         <TodayEvents />
         <ThisMonthSection />
         <EventCategories />

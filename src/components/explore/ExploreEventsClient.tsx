@@ -1,8 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { SectionSort } from "@/lib/api";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { MonthEvent } from "@/lib/placeholder-month-data";
 import {
   dateHeaderParts,
@@ -19,9 +18,38 @@ export type ExploreCategory = {
   image: string;
 };
 
-const SORT_OPTIONS: { id: SectionSort; label: string }[] = [
+/** Time windows when arriving from Start exploring / Browse all. */
+export type ExploreWhen =
+  | "today"
+  | "tomorrow"
+  | "weekend"
+  | "this-week"
+  | "next-week"
+  | "later"
+  | "all";
+
+/**
+ * Sort modes (UI). Better wordings:
+ * - Recently added — newest listings first
+ * - Soonest first — upcoming dates, nearest first
+ * - Latest dates — farthest / newest calendar dates first
+ */
+export type ExploreSort = "recent" | "soonest" | "latest";
+
+const WHEN_OPTIONS: { id: ExploreWhen; label: string }[] = [
+  { id: "today", label: "Today" },
+  { id: "tomorrow", label: "Tomorrow" },
+  { id: "weekend", label: "Weekend" },
+  { id: "this-week", label: "This week" },
+  { id: "next-week", label: "Next week" },
+  { id: "later", label: "Later" },
+  { id: "all", label: "Browse all" },
+];
+
+const SORT_OPTIONS: { id: ExploreSort; label: string }[] = [
   { id: "recent", label: "Recently added" },
-  { id: "date", label: "By date" },
+  { id: "soonest", label: "Soonest first" },
+  { id: "latest", label: "Latest dates" },
 ];
 
 function toTitleCase(value: string): string {
@@ -31,7 +59,6 @@ function toTitleCase(value: string): string {
     .replace(/\b([a-z])/g, (ch) => ch.toUpperCase());
 }
 
-/** "Today / Wednesday" — Luma-style date group header. */
 function dateGroupLabel(isoDate: string): string {
   const { primary } = dateHeaderParts(isoDate);
   const d = new Date(`${isoDate}T12:00:00+05:30`);
@@ -43,46 +70,151 @@ function dateGroupLabel(isoDate: string): string {
   return `${primary} / ${weekday}`;
 }
 
+function SortByDropdown({
+  sort,
+  onSortChange,
+}: {
+  sort: ExploreSort;
+  onSortChange: (next: ExploreSort) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const listId = useId();
+  const current =
+    SORT_OPTIONS.find((o) => o.id === sort)?.label ?? "Recently added";
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(e: PointerEvent) {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="relative z-20">
+      <div className="relative">
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-controls={listId}
+          aria-label="Sort events"
+          onClick={() => setOpen((v) => !v)}
+          className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-[#F7F7F8] py-1.5 pr-2.5 pl-3 text-[12.5px] font-semibold text-ink outline-none transition hover:bg-[#EFEFEF] focus-visible:ring-2 focus-visible:ring-accent/30"
+        >
+          {current}
+          <svg
+            viewBox="0 0 16 16"
+            className={`h-3.5 w-3.5 text-ink-soft transition-transform ${
+              open ? "rotate-180" : ""
+            }`}
+            aria-hidden
+          >
+            <path
+              d="M4 6l4 4 4-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+
+        {open ? (
+          <ul
+            id={listId}
+            role="listbox"
+            aria-label="Sort events"
+            className="absolute top-full right-0 z-30 mt-1.5 min-w-full overflow-hidden rounded-2xl border border-black/8 bg-white py-1 shadow-[0_12px_32px_-8px_rgba(30,26,22,0.28)]"
+          >
+            {SORT_OPTIONS.map((opt) => {
+              const selected = opt.id === sort;
+              return (
+                <li key={opt.id} role="option" aria-selected={selected}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSortChange(opt.id);
+                      setOpen(false);
+                    }}
+                    className={`flex w-full whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold transition hover:bg-[#F7F7F8] ${
+                      selected ? "text-accent" : "text-ink"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 /**
- * Explore Events — pill category chips (gradient oval ring when selected)
- * + date-grouped list (or flat when sorted by recently added).
- * Category / sort changes navigate via query params.
+ * Discover Events — time windows + categories + sort (UI).
+ * When / sort navigate via query params; list wiring can follow.
  */
 export default function ExploreEventsClient({
   categories,
   events,
   heading = "Discover events",
   initialCategoryId = "all",
-  from,
-  sort,
+  when: whenProp = "all",
+  sort: sortProp = "recent",
+  /** Show time-window chips (Start exploring / browse). Hide for vibe-only. */
+  showWhenChips = true,
 }: {
   categories: ExploreCategory[];
   events: MonthEvent[];
   heading?: string;
   initialCategoryId?: string | "all";
-  from?: string;
-  sort?: SectionSort;
+  when?: ExploreWhen;
+  sort?: ExploreSort;
+  showWhenChips?: boolean;
 }) {
   const router = useRouter();
-  const stripRef = useRef<HTMLDivElement>(null);
-  const [pendingId, setPendingId] = useState<string | null>(null);
-  const activeCategoryId = pendingId ?? initialCategoryId;
+  const categoryStripRef = useRef<HTMLDivElement>(null);
+  const whenStripRef = useRef<HTMLDivElement>(null);
+  const [pendingCategory, setPendingCategory] = useState<string | null>(null);
+  const [pendingWhen, setPendingWhen] = useState<ExploreWhen | null>(null);
+  const [pendingSort, setPendingSort] = useState<ExploreSort | null>(null);
+
+  const activeCategoryId = pendingCategory ?? initialCategoryId;
+  const when = pendingWhen ?? whenProp;
+  const sort = pendingSort ?? sortProp;
 
   useEffect(() => {
-    setPendingId(null);
+    setPendingCategory(null);
   }, [initialCategoryId]);
 
-  // Keep the selected chip in view (e.g. arrived from home with a right-side category).
   useEffect(() => {
-    const strip = stripRef.current;
-    if (!strip || activeCategoryId === "all") return;
+    setPendingWhen(null);
+  }, [whenProp]);
 
+  useEffect(() => {
+    setPendingSort(null);
+  }, [sortProp]);
+
+  useEffect(() => {
+    const strip = categoryStripRef.current;
+    if (!strip || activeCategoryId === "all") return;
     const chip = strip.querySelector<HTMLElement>(
       `[data-category-id="${CSS.escape(activeCategoryId)}"]`,
     );
     if (!chip) return;
-
-    // Defer until layout is ready after navigation.
     requestAnimationFrame(() => {
       chip.scrollIntoView({
         behavior: "smooth",
@@ -92,8 +224,32 @@ export default function ExploreEventsClient({
     });
   }, [activeCategoryId, categories]);
 
-  const groups = useMemo(() => groupByDate(events), [events]);
-  const showFlat = sort === "recent";
+  useEffect(() => {
+    const strip = whenStripRef.current;
+    if (!strip || !showWhenChips) return;
+    const chip = strip.querySelector<HTMLElement>(
+      `[data-when-id="${CSS.escape(when)}"]`,
+    );
+    if (!chip) return;
+    requestAnimationFrame(() => {
+      chip.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+    });
+  }, [when, showWhenChips]);
+
+  const sortLocked = when === "today" || when === "tomorrow";
+
+  /** Same date sections as Soonest first — calendar order (or reverse for Latest). */
+  const groups = useMemo(() => {
+    const entries = groupByDate(events);
+    const descending = sort === "latest";
+    return [...entries].sort(([a], [b]) =>
+      descending ? b.localeCompare(a) : a.localeCompare(b),
+    );
+  }, [events, sort]);
 
   const splitAt = Math.ceil(categories.length / 2);
   const row1 = categories.slice(0, splitAt);
@@ -101,30 +257,51 @@ export default function ExploreEventsClient({
 
   function buildHref(next: {
     category?: string | "all";
-    sort?: SectionSort | null;
+    when?: ExploreWhen;
+    sort?: ExploreSort;
   }) {
     const params = new URLSearchParams();
-    if (from) params.set("from", from);
+
+    const nextWhen = next.when !== undefined ? next.when : when;
+    if (nextWhen && nextWhen !== "all") params.set("when", nextWhen);
 
     const category =
       next.category !== undefined ? next.category : activeCategoryId;
     if (category && category !== "all") params.set("category", category);
 
-    const nextSort = next.sort !== undefined ? next.sort : sort;
-    if (nextSort) params.set("sort", nextSort);
+    const sortLocked = nextWhen === "today" || nextWhen === "tomorrow";
+    const nextSort = sortLocked
+      ? "recent"
+      : next.sort !== undefined
+        ? next.sort
+        : sort;
+    if (nextSort && nextSort !== "recent") params.set("sort", nextSort);
 
     const qs = params.toString();
     return qs ? `/explore-events?${qs}` : "/explore-events";
   }
 
+  function selectWhen(id: ExploreWhen) {
+    if (id === when) return;
+    setPendingWhen(id);
+    // Today / Tomorrow lock to recently added — drop any prior sort from the URL.
+    if (id === "today" || id === "tomorrow") {
+      setPendingSort("recent");
+      router.push(buildHref({ when: id, sort: "recent" }));
+      return;
+    }
+    router.push(buildHref({ when: id }));
+  }
+
   function selectCategory(id: string | "all") {
     if (id === activeCategoryId) return;
-    setPendingId(id);
+    setPendingCategory(id);
     router.push(buildHref({ category: id }));
   }
 
-  function selectSort(next: SectionSort) {
+  function selectSort(next: ExploreSort) {
     if (next === sort) return;
+    setPendingSort(next);
     router.push(buildHref({ sort: next }));
   }
 
@@ -144,10 +321,47 @@ export default function ExploreEventsClient({
 
   return (
     <div className="mx-auto max-w-[720px] px-5 pb-16 lg:px-8">
-      <h1 className="text-page">{heading}</h1>
+      {/* When chips are on, the header already shows Today / Tomorrow / … —
+          keep one heading only. Vibe-only still needs the category title. */}
+      {showWhenChips ? (
+        <h1 className="sr-only">{heading}</h1>
+      ) : (
+        <h1 className="text-page">{heading}</h1>
+      )}
 
+      {/* Time windows */}
+      {showWhenChips ? (
+        <div
+          ref={whenStripRef}
+          className="no-scrollbar -mx-5 overflow-x-auto px-5 lg:-mx-8 lg:px-8"
+        >
+          <div className="flex w-max gap-2 py-1">
+            {WHEN_OPTIONS.map((opt) => {
+              const active = when === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  data-when-id={opt.id}
+                  aria-pressed={active}
+                  onClick={() => selectWhen(opt.id)}
+                  className={`shrink-0 rounded-full px-3.5 py-2 text-[13px] font-semibold whitespace-nowrap transition ${
+                    active
+                      ? "bg-ink text-white"
+                      : "bg-[#F1EFEC] text-ink-soft hover:bg-[#E6E2DB] hover:text-ink"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Categories */}
       <div
-        ref={stripRef}
+        ref={categoryStripRef}
         className="no-scrollbar mt-3 -mx-5 overflow-x-auto px-5 lg:-mx-8 lg:px-8"
       >
         <div className="flex w-max flex-col gap-2.5 py-1">
@@ -167,7 +381,9 @@ export default function ExploreEventsClient({
                 selected={activeCategoryId === cat.id}
                 onClick={() => selectCategory(cat.id)}
               >
-                <span className="whitespace-nowrap">{toTitleCase(cat.name)}</span>
+                <span className="whitespace-nowrap">
+                  {toTitleCase(cat.name)}
+                </span>
               </CategoryPill>
             ))}
           </div>
@@ -179,33 +395,20 @@ export default function ExploreEventsClient({
                 selected={activeCategoryId === cat.id}
                 onClick={() => selectCategory(cat.id)}
               >
-                <span className="whitespace-nowrap">{toTitleCase(cat.name)}</span>
+                <span className="whitespace-nowrap">
+                  {toTitleCase(cat.name)}
+                </span>
               </CategoryPill>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-2">
-        {SORT_OPTIONS.map((opt) => {
-          const active = sort === opt.id;
-          return (
-            <button
-              key={opt.id}
-              type="button"
-              aria-pressed={active}
-              onClick={() => selectSort(opt.id)}
-              className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition ${
-                active
-                  ? "bg-ink text-white"
-                  : "bg-[#F1EFEC] text-ink-soft hover:bg-[#E6E2DB] hover:text-ink"
-              }`}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-      </div>
+      {sortLocked ? null : (
+        <div className="mt-4 flex justify-end">
+          <SortByDropdown sort={sort} onSortChange={selectSort} />
+        </div>
+      )}
 
       <div className="mt-8">
         {events.length === 0 ? (
@@ -217,20 +420,13 @@ export default function ExploreEventsClient({
               No events found
             </p>
             <p className="mx-auto mt-1.5 max-w-[280px] text-meta">
-              Try another category.
+              Try another time or category.
             </p>
           </div>
-        ) : showFlat ? (
-          <ul className="flex flex-col gap-5">
-            {events.map((event) => (
-              <li key={event.id}>{renderRow(event)}</li>
-            ))}
-          </ul>
         ) : (
           groups.map(([date, dayEvents]) => (
             <section key={date} className="mb-7">
               <h2 className="mb-4 text-section">{dateGroupLabel(date)}</h2>
-
               <ul className="flex flex-col gap-5">
                 {dayEvents.map((event) => (
                   <li key={event.id}>{renderRow(event)}</li>

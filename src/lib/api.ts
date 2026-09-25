@@ -355,14 +355,18 @@ function formatEventDateISO(iso: string | null | undefined): string {
  *
  * Optional `sort` — `recent` (Recently added) or `date` (By date).
  * Omit for the section's backend default.
+ *
+ * Optional `part` — narrows THIS_WEEK: `today` | `tomorrow` | `weekday` | `weekend`.
  */
-export type SectionSort = "recent" | "date";
+export type SectionSort = "recent" | "date" | "latest";
+export type SectionWeekPart = "today" | "tomorrow" | "weekday" | "weekend";
 
 export async function getMonthSectionEvents(
   key: string,
   size = 20,
   categoryId?: string,
   sort?: SectionSort,
+  part?: SectionWeekPart,
 ): Promise<MonthEvent[]> {
   try {
     const params = new URLSearchParams({
@@ -373,6 +377,7 @@ export async function getMonthSectionEvents(
     });
     if (categoryId) params.set("categoryId", categoryId);
     if (sort) params.set("sort", sort);
+    if (part) params.set("part", part);
 
     const url = `${API_BASE_URL}/api/v1/event/section?${params.toString()}`;
 
@@ -383,7 +388,7 @@ export async function getMonthSectionEvents(
 
     if (!res.ok) {
       console.error(
-        `[month:${key}${categoryId ? `:${categoryId}` : ""}${sort ? `:${sort}` : ""}] API responded ${res.status} ${res.statusText} — showing empty state`,
+        `[month:${key}${categoryId ? `:${categoryId}` : ""}${sort ? `:${sort}` : ""}${part ? `:${part}` : ""}] API responded ${res.status} ${res.statusText} — showing empty state`,
       );
       return [];
     }

@@ -1,18 +1,71 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import HeaderMobileMenu from "./HeaderMobileMenu";
 import HeaderSearch from "./search/HeaderSearch";
 import { navLinks } from "@/lib/data";
 
+function isDiscoverEventsPath(pathname: string) {
+  return pathname === "/explore-events" || pathname.startsWith("/explore-events/");
+}
+
+/** Matches Discover page headings for `?when=` / legacy `?from=`. */
+function discoverHeaderLabel(
+  when: string | null,
+  from: string | null,
+  category: string | null,
+): string {
+  const key = when || from;
+  switch (key) {
+    case "today":
+      return "Today";
+    case "tomorrow":
+      return "Tomorrow";
+    case "weekend":
+      return "Weekend";
+    case "this-week":
+      return "This week";
+    case "next-week":
+      return "Next week";
+    case "later":
+      return "Later";
+    case "all":
+      return "Discover events";
+    default:
+      // Vibe-only entry (`?category=` with no when) — keep a generic label;
+      // the page h1 already shows the category name.
+      if (category && !when && !from) return "Discover events";
+      return "Discover events";
+  }
+}
+
 export default function Header() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const onDiscover = isDiscoverEventsPath(pathname);
+  const discoverLabel = onDiscover
+    ? discoverHeaderLabel(
+        searchParams.get("when"),
+        searchParams.get("from"),
+        searchParams.get("category"),
+      )
+    : null;
+
   return (
     <header className="flex items-center justify-between px-5 py-[18px] lg:px-20 lg:py-6">
-      {/* Wordmark — same treatment as the "Later this month" section labels
-          (11px, semibold, wide tracking, uppercase), in ink rather than accent. */}
-      <Link href="/" className="flex shrink-0 items-center no-underline">
-        <span className="text-[11px] font-semibold tracking-[0.14em] text-ink uppercase">
-          City Tales
+      {/* Left: City Tales wordmark, or current Discover window label. */}
+      {onDiscover ? (
+        <span className="min-w-0 shrink truncate text-[15px] font-semibold tracking-[-0.015em] text-ink">
+          {discoverLabel}
         </span>
-      </Link>
+      ) : (
+        <Link href="/" className="flex shrink-0 items-center no-underline">
+          <span className="text-[11px] font-semibold tracking-[0.14em] text-ink uppercase">
+            City Tales
+          </span>
+        </Link>
+      )}
 
       {/* Desktop nav */}
       <nav className="hidden gap-10 lg:flex">
@@ -27,8 +80,8 @@ export default function Header() {
         ))}
       </nav>
 
-      {/* Mobile: search + hamburger */}
-      <div className="flex items-center gap-4 lg:hidden">
+      {/* Mobile: search + hamburger — ml-auto locks them to the right */}
+      <div className="ml-auto flex shrink-0 items-center gap-4 lg:hidden">
         <HeaderSearch iconClassName="h-5 w-5 text-ink" />
         <HeaderMobileMenu />
       </div>
