@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import HeaderMobileMenu from "./HeaderMobileMenu";
 import HeaderSearch from "./search/HeaderSearch";
@@ -40,7 +41,19 @@ function discoverHeaderLabel(
   }
 }
 
-export default function Header() {
+function HeaderFallback() {
+  return (
+    <header className="flex items-center justify-between px-5 py-[18px] lg:px-20 lg:py-6">
+      <span className="text-[11px] font-semibold tracking-[0.14em] text-ink uppercase">
+        City Tales
+      </span>
+      <div className="ml-auto h-10 w-24 lg:hidden" aria-hidden />
+      <div className="hidden h-10 w-40 lg:block" aria-hidden />
+    </header>
+  );
+}
+
+function HeaderInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const onDiscover = isDiscoverEventsPath(pathname);
@@ -97,5 +110,17 @@ export default function Header() {
         </Link>
       </div>
     </header>
+  );
+}
+
+/**
+ * Home renders Header without PageShell — wrap useSearchParams in Suspense
+ * so `/` can prerender.
+ */
+export default function Header() {
+  return (
+    <Suspense fallback={<HeaderFallback />}>
+      <HeaderInner />
+    </Suspense>
   );
 }
