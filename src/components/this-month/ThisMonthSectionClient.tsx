@@ -17,6 +17,9 @@ const ALL = "All";
 
 type WeekPart = "all" | "weekday" | "weekend";
 
+/** Homepage This Month: recently added / by date only (not Discover's latest). */
+type HomeSectionSort = Extract<SectionSort, "recent" | "date">;
+
 /** Rows shown per list before "See everything" takes over. */
 const LIST_LIMIT = 4;
 
@@ -37,7 +40,7 @@ type SectionBundle = {
   later: MonthEvent[];
 };
 
-const SORT_OPTIONS: { value: SectionSort; label: string }[] = [
+const SORT_OPTIONS: { value: HomeSectionSort; label: string }[] = [
   { value: "recent", label: "Recently added" },
   { value: "date", label: "By date" },
 ];
@@ -47,8 +50,8 @@ function SortByDropdown({
   onSortChange,
   label,
 }: {
-  sort: SectionSort;
-  onSortChange: (next: SectionSort) => void;
+  sort: HomeSectionSort;
+  onSortChange: (next: HomeSectionSort) => void;
   label: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -146,8 +149,8 @@ function SectionHeader({
   onSortChange,
 }: {
   label: string;
-  sort: SectionSort;
-  onSortChange: (next: SectionSort) => void;
+  sort: HomeSectionSort;
+  onSortChange: (next: HomeSectionSort) => void;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
@@ -193,13 +196,13 @@ function SeeAllLink({
 }
 
 type Props = {
-  bySort: Record<SectionSort, SectionBundle>;
+  bySort: Record<HomeSectionSort, SectionBundle>;
   categories: string[];
 };
 
 export default function ThisMonthSectionClient({ bySort, categories }: Props) {
   const [activeCategory, setActiveCategory] = useState<string>(ALL);
-  const [sort, setSort] = useState<SectionSort>("recent");
+  const [sort, setSort] = useState<HomeSectionSort>("recent");
   const [weekPart, setWeekPart] = useState<WeekPart>("all");
 
   const bundle = bySort[sort];
