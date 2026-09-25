@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import type { MonthEvent } from "@/lib/placeholder-month-data";
 import {
   dateHeaderParts,
@@ -163,6 +163,25 @@ function SortByDropdown({
   );
 }
 
+function ExploreListLoader() {
+  return (
+    <div
+      className="flex flex-col items-center justify-center px-1 py-16"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <span
+        className="h-8 w-8 animate-spin rounded-full border-[2.5px] border-accent/25 border-t-accent"
+        aria-hidden
+      />
+      <p className="mt-4 text-[13px] font-medium text-ink-soft">
+        Loading events…
+      </p>
+    </div>
+  );
+}
+
 /**
  * Discover Events — time windows + categories + sort (UI).
  * When / sort navigate via query params; list wiring can follow.
@@ -186,6 +205,7 @@ export default function ExploreEventsClient({
   showWhenChips?: boolean;
 }) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const categoryStripRef = useRef<HTMLDivElement>(null);
   const whenStripRef = useRef<HTMLDivElement>(null);
   const [pendingCategory, setPendingCategory] = useState<string | null>(null);
@@ -195,6 +215,11 @@ export default function ExploreEventsClient({
   const activeCategoryId = pendingCategory ?? initialCategoryId;
   const when = pendingWhen ?? whenProp;
   const sort = pendingSort ?? sortProp;
+  const isLoading =
+    isPending ||
+    pendingWhen !== null ||
+    pendingCategory !== null ||
+    pendingSort !== null;
 
   useEffect(() => {
     setPendingCategory(null);
@@ -287,22 +312,30 @@ export default function ExploreEventsClient({
     // Today / Tomorrow lock to recently added — drop any prior sort from the URL.
     if (id === "today" || id === "tomorrow") {
       setPendingSort("recent");
-      router.push(buildHref({ when: id, sort: "recent" }));
+      startTransition(() => {
+        router.push(buildHref({ when: id, sort: "recent" }));
+      });
       return;
     }
-    router.push(buildHref({ when: id }));
+    startTransition(() => {
+      router.push(buildHref({ when: id }));
+    });
   }
 
   function selectCategory(id: string | "all") {
     if (id === activeCategoryId) return;
     setPendingCategory(id);
-    router.push(buildHref({ category: id }));
+    startTransition(() => {
+      router.push(buildHref({ category: id }));
+    });
   }
 
   function selectSort(next: ExploreSort) {
     if (next === sort) return;
     setPendingSort(next);
-    router.push(buildHref({ sort: next }));
+    startTransition(() => {
+      router.push(buildHref({ sort: next }));
+    });
   }
 
   function renderRow(event: MonthEvent) {
@@ -410,8 +443,10 @@ export default function ExploreEventsClient({
         </div>
       )}
 
-      <div className="mt-8">
-        {events.length === 0 ? (
+      <div className="mt-8" aria-busy={isLoading}>
+        {isLoading ? (
+          <ExploreListLoader />
+        ) : events.length === 0 ? (
           <div className="px-1 py-14 text-center">
             <div className="flex justify-center text-ink-soft">
               <SearchIcon className="h-7 w-7" />
