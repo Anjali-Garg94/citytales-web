@@ -6,7 +6,6 @@ import type { WeekendEvent } from "@/lib/placeholder-month-data";
 import { useAuth } from "@/components/auth/AuthContext";
 import EventThumb from "@/components/event/EventThumb";
 import {
-  ArrowRightIcon,
   BookmarkIcon,
   ChevronLeftIcon,
   ClockIcon,
@@ -14,11 +13,10 @@ import {
   SearchIcon,
 } from "@/components/Icons";
 
-const TABS = [
-  { id: "weekend" as const, label: "This weekend" },
-  { id: "all" as const, label: "All events" },
-];
-type TabId = (typeof TABS)[number]["id"];
+/** Same id as getMusicPartiesEvents — Music & Parties category. */
+const MUSIC_PARTIES_CATEGORY_ID = "6aa0fff6a0724544586e816e";
+
+const EXPLORE_ALL_HREF = `/explore-events?when=all&category=${encodeURIComponent(MUSIC_PARTIES_CATEGORY_ID)}`;
 
 function LiveMusicCard({
   event,
@@ -38,7 +36,7 @@ function LiveMusicCard({
       e.stopPropagation();
       if (saving) return;
       if (!user) {
-        window.alert("Please login to bookmark events.");
+        window.alert("Please log in or sign up to save events.");
         openAuthModal("login");
         return;
       }
@@ -237,21 +235,18 @@ function HomeEventsCarousel({ events }: { events: WeekendEvent[] }) {
 
 type Props = {
   thisWeekend: WeekendEvent[];
-  all: WeekendEvent[];
   /**
    * `page` — standalone /live-music screen with back + search.
-   * `home` — landing-page section (no back/search), capped list + See all.
+   * `home` — landing-page section (no back/search).
    */
   variant?: "page" | "home";
 };
 
 export default function LiveMusicSection({
   thisWeekend,
-  all,
   variant = "page",
 }: Props) {
-  const [tab, setTab] = useState<TabId>("weekend");
-  const events = tab === "weekend" ? thisWeekend : all;
+  const events = thisWeekend;
   const isPage = variant === "page";
 
   return (
@@ -311,24 +306,18 @@ export default function LiveMusicSection({
           </div>
 
           <div className="mt-6 flex flex-wrap gap-2.5 lg:mt-7">
-            {TABS.map((t) => {
-              const active = t.id === tab;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setTab(t.id)}
-                  aria-pressed={active}
-                  className={`rounded-full px-4 py-2.5 text-[13px] font-semibold transition ${
-                    active
-                      ? "bg-white text-ink"
-                      : "bg-white/10 text-white ring-1 ring-white/20 hover:bg-white/15"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
+            <span
+              aria-current="page"
+              className="rounded-full bg-white px-4 py-2.5 text-[13px] font-semibold text-ink"
+            >
+              This week
+            </span>
+            <Link
+              href={EXPLORE_ALL_HREF}
+              className="rounded-full bg-white/10 px-4 py-2.5 text-[13px] font-semibold text-white no-underline ring-1 ring-white/20 transition hover:bg-white/15"
+            >
+              All events
+            </Link>
           </div>
         </div>
       </header>
@@ -352,18 +341,6 @@ export default function LiveMusicSection({
             ))}
           </div>
         )}
-
-        {variant === "home" ? (
-          <div className="mt-9 flex justify-center lg:mt-10">
-            <Link
-              href="/live-music"
-              className="group inline-flex items-center gap-2 rounded-full bg-white/20 px-7 py-3 text-[14px] font-semibold tracking-[0.01em] text-white no-underline ring-1 ring-white/40 backdrop-blur-md transition hover:bg-white/28 lg:px-8 lg:py-3.5 lg:text-[15px]"
-            >
-              See all
-              <ArrowRightIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-            </Link>
-          </div>
-        ) : null}
       </div>
     </section>
   );

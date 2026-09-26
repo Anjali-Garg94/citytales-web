@@ -4,17 +4,20 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import EventThumb from "@/components/event/EventThumb";
 import { ClockIcon, PinIcon } from "@/components/Icons";
+import { categoryBadgeColors } from "@/lib/category-badge";
 
 export type EventListRowProps = {
   href: string;
   image: string;
   title: string;
-  /** Category label — rendered as eyebrow caps or accent pill */
+  /** Category label — rendered as eyebrow caps, accent pill, or right-side badge */
   category?: string;
-  categoryVariant?: "eyebrow" | "pill" | "none";
+  categoryVariant?: "eyebrow" | "pill" | "badge-right" | "none";
   /** Calendar date under the title (e.g. flat / recently-added lists) */
   date?: string;
   time?: string;
+  /** Joiner between date and time when both are set. Default middle-dot. */
+  dateTimeJoiner?: string;
   venue?: string;
   /** Soft chip above the title (e.g. Saved “Tonight”) */
   urgencyChip?: string;
@@ -36,6 +39,7 @@ export default function EventListRow({
   categoryVariant = "eyebrow",
   date,
   time,
+  dateTimeJoiner = " · ",
   venue,
   urgencyChip,
   ended = false,
@@ -44,7 +48,14 @@ export default function EventListRow({
 }: EventListRowProps) {
   const showCategory =
     Boolean(category) && categoryVariant !== "none";
-  const hasTrailing = Boolean(trailing);
+  const badgeRight = showCategory && categoryVariant === "badge-right";
+  const hasTrailing = Boolean(trailing) || badgeRight;
+  const badgeColors =
+    badgeRight && category ? categoryBadgeColors(category) : null;
+
+  const dateTimeLine = date
+    ? `${date}${time ? `${dateTimeJoiner}${time}` : ""}`
+    : null;
 
   return (
     <div
@@ -53,7 +64,7 @@ export default function EventListRow({
       <Link
         href={href}
         className={`flex min-w-0 flex-1 items-start gap-3.5 no-underline ${
-          hasTrailing ? "pr-9" : ""
+          badgeRight ? "pr-[4.75rem]" : hasTrailing ? "pr-9" : ""
         }`}
       >
         <div className="transition-transform duration-500 group-hover:scale-[1.02]">
@@ -88,12 +99,8 @@ export default function EventListRow({
             {title}
           </div>
 
-          {/* Date under title (with time), matching This Week card stack */}
-          {date ? (
-            <div className="mt-1 text-meta">
-              {date}
-              {time ? ` · ${time}` : ""}
-            </div>
+          {dateTimeLine ? (
+            <div className="mt-1 text-meta">{dateTimeLine}</div>
           ) : null}
 
           {/* Time row when there is no date line */}
@@ -122,8 +129,23 @@ export default function EventListRow({
         </div>
       </Link>
 
+      {badgeRight && badgeColors ? (
+        <div className="absolute top-0.5 right-0">
+          <span
+            className="inline-block max-w-[5.5rem] truncate rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.04em] uppercase"
+            style={{ backgroundColor: badgeColors.bg, color: badgeColors.text }}
+          >
+            {category}
+          </span>
+        </div>
+      ) : null}
+
       {trailing ? (
-        <div className="absolute top-0 right-0 flex items-start gap-0.5">
+        <div
+          className={`absolute top-0 flex items-start gap-0.5 ${
+            badgeRight ? "right-0 top-8" : "right-0"
+          }`}
+        >
           {trailing}
         </div>
       ) : null}

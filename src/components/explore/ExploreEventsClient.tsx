@@ -5,7 +5,10 @@ import { useEffect, useId, useMemo, useRef, useState, useTransition } from "reac
 import type { MonthEvent } from "@/lib/placeholder-month-data";
 import {
   dateHeaderParts,
+  dayNumber,
   groupByDate,
+  monthShort,
+  weekdayShort,
 } from "@/lib/placeholder-month-data";
 import CategoryPill from "@/components/CategoryPill";
 import EventListRow from "@/components/event/EventListRow";
@@ -373,14 +376,23 @@ export default function ExploreEventsClient({
   }
 
   function renderRow(event: MonthEvent) {
+    const dateLabel = [
+      weekdayShort(event.date),
+      `${dayNumber(event.date)} ${monthShort(event.date)}`,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
     return (
       <EventListRow
         href={`/events/${event.slug}`}
         image={event.image}
         title={event.title}
         category={event.category}
-        categoryVariant="eyebrow"
+        categoryVariant="badge-right"
+        date={dateLabel || undefined}
         time={event.startTime || undefined}
+        dateTimeJoiner=" | "
         venue={event.venue || undefined}
       />
     );

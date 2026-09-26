@@ -15,6 +15,7 @@ const CATEGORY_BADGE_COLORS: Record<string, BadgeColors> = {
   "HEALTH & WELLNESS": { bg: "#E1F5F1", text: "#0F8A78" },
   KIDS: { bg: "#FDE7F3", text: "#C23B86" },
   ACTIVITIES: { bg: "#FDE9D2", text: "#B9631A" },
+  DANCE: { bg: "#FDE7F3", text: "#C23B86" },
   EVENT: { bg: "var(--accent-tint)", text: "var(--accent-deep)" },
 };
 

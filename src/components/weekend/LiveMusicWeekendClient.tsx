@@ -5,20 +5,14 @@ import LiveMusicSection from "@/components/live-music/LiveMusicSection";
 
 /**
  * Landing-page Live Music block — same dark design as /live-music, without
- * back/search chrome. Caps the list and links through to the full page.
+ * back/search chrome.
  */
 export default function LiveMusicWeekendClient({
   thisWeekend,
-  all,
 }: {
   thisWeekend: WeekendEvent[];
-  all: WeekendEvent[];
 }) {
   return (
-    <LiveMusicSection
-      thisWeekend={thisWeekend}
-      all={all}
-      variant="home"
-    />
+    <LiveMusicSection thisWeekend={thisWeekend} variant="home" />
   );
 }

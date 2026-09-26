@@ -1,19 +1,21 @@
 "use client";
 
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { useState } from "react";
 import {
-  dateHeaderParts,
+  dayNumber,
+  monthShort,
+  weekdayShort,
   type MonthEvent,
 } from "@/lib/placeholder-month-data";
-import { BookmarkIcon, ClockIcon, PinIcon } from "../Icons";
+import { useSaveEvent } from "@/components/event/useSaveEvent";
+import { BookmarkIcon, PinIcon } from "../Icons";
 import { staggerParent, viewport } from "../motion/variants";
 
 /**
  * Flat scanning list for "Next week" and "Later this month".
- * Card stack: title → date → time · location.
+ * Meta line matches Explore: Date | Time, then venue.
  */
 const rowVariants = {
   hidden: { opacity: 0, y: 16 },
@@ -24,20 +26,21 @@ const rowVariants = {
   },
 };
 
-function timeLabel(event: MonthEvent): string {
-  return event.startTime || "";
-}
-
 function eventDateLabel(isoDate: string): string {
-  const { primary, secondary } = dateHeaderParts(isoDate);
-  if (!primary) return "";
-  return secondary ? `${primary} / ${secondary}` : primary;
+  return [
+    weekdayShort(isoDate),
+    `${dayNumber(isoDate)} ${monthShort(isoDate)}`,
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function ListEventCard({ event }: { event: MonthEvent }) {
-  const [saved, setSaved] = useState(false);
-  const time = timeLabel(event);
+  const { saved, saving, toggleSave } = useSaveEvent(event.id);
   const dateLabel = eventDateLabel(event.date);
+  const dateTimeLine = dateLabel
+    ? `${dateLabel}${event.startTime ? ` | ${event.startTime}` : ""}`
+    : event.startTime || "";
 
   return (
     <motion.div variants={rowVariants}>
@@ -62,31 +65,16 @@ function ListEventCard({ event }: { event: MonthEvent }) {
               {event.title}
             </div>
 
-            {dateLabel ? (
+            {dateTimeLine ? (
               <div className="mt-1 text-[12.5px] leading-snug font-medium text-ink-soft lg:text-[13px]">
-                {dateLabel}
+                {dateTimeLine}
               </div>
             ) : null}
 
-            {time || event.venue ? (
-              <div className="mt-1 flex min-w-0 items-center gap-2 text-[12.5px] leading-snug text-ink-soft lg:text-[13px]">
-                {time ? (
-                  <span className="inline-flex min-w-0 shrink-0 items-center gap-1.5">
-                    <ClockIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
-                    <span className="truncate">{time}</span>
-                  </span>
-                ) : null}
-                {time && event.venue ? (
-                  <span className="shrink-0 text-ink-soft/50" aria-hidden>
-                    ·
-                  </span>
-                ) : null}
-                {event.venue ? (
-                  <span className="inline-flex min-w-0 flex-1 items-center gap-1.5">
-                    <PinIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
-                    <span className="truncate">{event.venue}</span>
-                  </span>
-                ) : null}
+            {event.venue ? (
+              <div className="mt-1 flex min-w-0 items-center gap-1.5 text-[12.5px] leading-snug text-ink-soft lg:text-[13px]">
+                <PinIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
+                <span className="truncate">{event.venue}</span>
               </div>
             ) : null}
           </div>
@@ -94,14 +82,15 @@ function ListEventCard({ event }: { event: MonthEvent }) {
 
         <button
           type="button"
-          onClick={() => setSaved((s) => !s)}
+          disabled={saving}
+          onClick={(e) => void toggleSave(e)}
           aria-label={
             saved
               ? `Remove bookmark from ${event.title}`
               : `Bookmark ${event.title}`
           }
           aria-pressed={saved}
-          className="absolute top-1/2 right-2.5 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-ink-soft transition hover:bg-[#F4F3F1] hover:text-ink lg:right-3"
+          className="absolute top-1/2 right-2.5 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-ink-soft transition hover:bg-[#F4F3F1] hover:text-ink disabled:opacity-60 lg:right-3"
         >
           <BookmarkIcon className="h-4 w-4" filled={saved} />
         </button>

@@ -100,7 +100,7 @@ export default function EventDetailView({ event }: { event: EventDetail }) {
     if (savingRef.current) return;
 
     if (!user) {
-      window.alert("Please login to bookmark events.");
+      window.alert("Please log in or sign up to save events.");
       openAuthModal("login");
       return;
     }

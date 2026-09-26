@@ -10,14 +10,10 @@ export const metadata: Metadata = {
 
 /**
  * Full Live Music & Parties browse screen — dark theme matching the app
- * mockup. Data comes from the same Music & Parties section endpoint the
- * homepage carousel uses.
+ * mockup. This week from the section API; All events goes to Discover.
  */
 export default async function LiveMusicPage() {
-  const [thisWeekend, all] = await Promise.all([
-    getMusicPartiesEvents("THIS_WEEK", 40),
-    getMusicPartiesEvents("ALL", 40),
-  ]);
+  const thisWeekend = await getMusicPartiesEvents("THIS_WEEK", 40);
 
-  return <LiveMusicPageClient thisWeekend={thisWeekend} all={all} />;
+  return <LiveMusicPageClient thisWeekend={thisWeekend} />;
 }
