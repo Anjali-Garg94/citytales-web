@@ -99,7 +99,7 @@ export async function getOrganiserColumns(): Promise<Organiser[][]> {
  * Today's events
  * ------------------------------------------------------------------ */
 
-/** One record inside the `content` array of GET /api/v1/event/todayEvents */
+/** One event record from GET /api/v1/event/section (and related event payloads). */
 type ApiEvent = {
   id: string;
   title: string;
@@ -109,9 +109,6 @@ type ApiEvent = {
   startDate?: string;
   imageUrls?: { coverUrlS3Path?: string | null } | null;
 };
-
-/** Spring-style paginated envelope */
-type Paginated<T> = { content?: T[]; totalElements?: number };
 
 /** One record from GET /api/v1/category */
 type ApiCategory = {
@@ -166,8 +163,21 @@ function shortVenue(address: string | null | undefined, city?: string | null): s
   return first || city?.trim() || "";
 }
 
+/** Shape returned by GET /api/v1/event/section?key=... */
+type ApiSection = {
+  key?: string;
+  title?: string;
+  hasMore?: boolean;
+  events?: ApiEvent[];
+};
+
+/** Ludhiana — the launch city. Override with NEXT_PUBLIC_CITY_ID. */
+export const CITY_ID =
+  process.env.NEXT_PUBLIC_CITY_ID ?? "69ddfd45f46c8343ca62b4b7";
+
 /**
- * Fetches today's events for the homepage rail.
+ * Fetches today's events for the homepage rail via
+ * GET /api/v1/event/section?key=THIS_WEEK&part=today — same source as Discover Today.
  *
  * Returns an EMPTY array both when there genuinely are no events today and
  * when the API is unavailable — deliberately NOT falling back to the sample
@@ -177,8 +187,15 @@ function shortVenue(address: string | null | undefined, city?: string | null): s
  */
 export async function getTodayEvents(): Promise<TodayEvent[]> {
   try {
+    const params = new URLSearchParams({
+      cityId: CITY_ID,
+      key: "THIS_WEEK",
+      part: "today",
+      page: "0",
+      size: "10",
+    });
     const [res, categoryNames] = await Promise.all([
-      fetch(`${API_BASE_URL}/api/v1/event/todayEvents?page=0&size=10`, {
+      fetch(`${API_BASE_URL}/api/v1/event/section?${params.toString()}`, {
         // Today's list changes through the day — refresh every 5 minutes.
         next: { revalidate: 300 },
       }),
@@ -192,15 +209,15 @@ export async function getTodayEvents(): Promise<TodayEvent[]> {
       return [];
     }
 
-    const json = (await res.json()) as Paginated<ApiEvent> | unknown;
-    const content = (json as Paginated<ApiEvent>)?.content;
+    const json = (await res.json()) as ApiSection | unknown;
+    const events = (json as ApiSection)?.events;
 
-    if (!Array.isArray(content)) {
+    if (!Array.isArray(events)) {
       console.error("[todayEvents] Unexpected response shape — showing empty state");
       return [];
     }
 
-    return content
+    return events
       .filter((e): e is ApiEvent => typeof e?.title === "string" && typeof e?.id === "string")
       .map<TodayEvent>((e) => {
         const categoryId = e.categoryIds?.[0];
@@ -226,18 +243,6 @@ export async function getTodayEvents(): Promise<TodayEvent[]> {
 /* ------------------------------------------------------------------ *
  * This week
  * ------------------------------------------------------------------ */
-
-/** Shape returned by GET /api/v1/event/section?key=... */
-type ApiSection = {
-  key?: string;
-  title?: string;
-  hasMore?: boolean;
-  events?: ApiEvent[];
-};
-
-/** Ludhiana — the launch city. Override with NEXT_PUBLIC_CITY_ID. */
-export const CITY_ID =
-  process.env.NEXT_PUBLIC_CITY_ID ?? "69ddfd45f46c8343ca62b4b7";
 
 /**
  * "2026-09-20T09:30:00Z" -> "Sun, 20 Sept"
@@ -422,6 +427,62 @@ export async function getMonthSectionEvents(
   } catch (error) {
     console.error(
       `[month:${key}] Fetch failed — showing empty state:`,
+      error instanceof Error ? error.message : error,
+    );
+    return [];
+  }
+}
+
+/**
+ * Browse all — POST /api/v1/event/filter/v2 (city catalogue, optional category).
+ *
+ * Replaces merging THIS_WEEK + NEXT_WEEK + AFTER_NEXT_WEEK section GETs.
+ * Backend sorts by startDate ASC/DESC only (no createdAt "recent" on this path).
+ */
+export async function getBrowseAllEvents(
+  size = 60,
+  categoryId?: string,
+  sort?: SectionSort,
+): Promise<MonthEvent[]> {
+  try {
+    const startDateSortDirection =
+      sort === "latest" ? "DESC" : "ASC";
+
+    const body: Record<string, unknown> = {
+      cityIds: [CITY_ID],
+      status: "ACTIVE",
+      page: 0,
+      size,
+      startDateSortDirection,
+    };
+    if (categoryId) body.categoryIds = [categoryId];
+
+    const [res, categoryNames] = await Promise.all([
+      fetch(`${API_BASE_URL}/api/v1/event/filter/v2`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        next: { revalidate: 300 },
+      }),
+      getEventCategoryNames(),
+    ]);
+
+    if (!res.ok) {
+      console.error(
+        `[browse-all${categoryId ? `:${categoryId}` : ""}${sort ? `:${sort}` : ""}] API responded ${res.status} ${res.statusText} — showing empty state`,
+      );
+      return [];
+    }
+
+    const json: unknown = await res.json();
+    return mapApiEventsToMonthEvents(
+      extractApiEventList(json),
+      categoryNames,
+      categoryId,
+    );
+  } catch (error) {
+    console.error(
+      "[browse-all] Fetch failed — showing empty state:",
       error instanceof Error ? error.message : error,
     );
     return [];

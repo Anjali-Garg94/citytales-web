@@ -5,8 +5,8 @@ import ExploreEventsClient, {
 } from "@/components/explore/ExploreEventsClient";
 import PageShell from "@/components/PageShell";
 import {
+  getBrowseAllEvents,
   getEventCategories,
-  getEventsByCategory,
   getMonthSectionEvents,
   type SectionSort,
   type SectionWeekPart,
@@ -77,10 +77,10 @@ function toApiSort(sort: ExploreSort): SectionSort | undefined {
  *
  * `?when=today|tomorrow|weekend|this-week|next-week|later|all`
  * `?from=` still accepted (maps to when)
- * `?category=<id>` — vibe / chip filter
- * `?sort=recent|soonest|latest` — ignored for today/tomorrow (always recently added)
+ * `?category=<id>` — vibe / chip filter (combined with when)
+ * `?sort=recent|soonest|latest` — ignored for today/tomorrow (backend sorts by start time)
  *
- * Browse all merges This week + Next week + Later with the chosen sort.
+ * Browse all uses POST /api/v1/event/filter/v2 (not section GETs).
  */
 export default async function ExploreEventsPage({
   searchParams,
@@ -101,8 +101,9 @@ export default async function ExploreEventsPage({
 
   const when = parseWhen(whenParam, from);
   const sortLocked = when === "today" || when === "tomorrow";
-  const sort = sortLocked ? "recent" : parseSort(sortParam);
-  const apiSort = toApiSort(sort);
+  // Display-only for locked windows; API sort is owned by the backend for today/tomorrow.
+  const sort = sortLocked ? "soonest" : parseSort(sortParam);
+  const apiSort = sortLocked ? undefined : toApiSort(sort);
 
   const categories = await getEventCategories();
   const selectedCategory = categoryParam
@@ -112,18 +113,15 @@ export default async function ExploreEventsPage({
 
   const section = WHEN_TO_SECTION[when] ?? WHEN_TO_SECTION.all!;
 
-  // Vibe-only entry (Pick your Vibe) — no time chips emphasis, category heading.
-  const vibeOnly = Boolean(categoryId && !whenParam && !from);
+  const heading =
+    when === "all" ? "Discover events" : section.heading;
 
-  const heading = vibeOnly
-    ? selectedCategory!.name
-    : when === "all"
-      ? "Discover events"
-      : section.heading;
+  // Only Start exploring (from=home) pins the when-strip to the left.
+  // Manually tapping Browse all leaves the strip scroll position alone.
+  const pinWhenStripStart = when === "all" && from === "home";
 
   const events = await loadExploreEvents({
     when,
-    vibeOnly,
     categoryId,
     apiSort,
     section,
@@ -146,7 +144,8 @@ export default async function ExploreEventsPage({
           initialCategoryId={categoryId ?? "all"}
           when={when}
           sort={sort}
-          showWhenChips={!vibeOnly}
+          showWhenChips
+          pinWhenStripStart={pinWhenStripStart}
         />
       </section>
     </PageShell>
@@ -155,29 +154,17 @@ export default async function ExploreEventsPage({
 
 async function loadExploreEvents({
   when,
-  vibeOnly,
   categoryId,
   apiSort,
   section,
 }: {
   when: ExploreWhen;
-  vibeOnly: boolean;
   categoryId?: string;
   apiSort: SectionSort | undefined;
   section: { key: string; heading: string; part?: SectionWeekPart };
 }) {
-  if (categoryId && vibeOnly) {
-    return getEventsByCategory(categoryId, 60, apiSort);
-  }
-
-  // Browse all — merge the three forward windows under one sort.
   if (when === "all") {
-    const [thisWeek, nextWeek, later] = await Promise.all([
-      getMonthSectionEvents("THIS_WEEK", 40, categoryId, apiSort),
-      getMonthSectionEvents("NEXT_WEEK", 40, categoryId, apiSort),
-      getMonthSectionEvents("AFTER_NEXT_WEEK", 40, categoryId, apiSort),
-    ]);
-    return mergeBrowseAll(thisWeek, nextWeek, later, apiSort);
+    return getBrowseAllEvents(60, categoryId, apiSort);
   }
 
   return getMonthSectionEvents(
@@ -187,28 +174,4 @@ async function loadExploreEvents({
     apiSort,
     section.part,
   );
-}
-
-function mergeBrowseAll(
-  thisWeek: Awaited<ReturnType<typeof getMonthSectionEvents>>,
-  nextWeek: Awaited<ReturnType<typeof getMonthSectionEvents>>,
-  later: Awaited<ReturnType<typeof getMonthSectionEvents>>,
-  apiSort: SectionSort | undefined,
-) {
-  const seen = new Set<string>();
-  const merged = [...thisWeek, ...nextWeek, ...later].filter((e) => {
-    if (seen.has(e.id)) return false;
-    seen.add(e.id);
-    return true;
-  });
-
-  if (apiSort === "latest") {
-    return merged.sort((a, b) => b.date.localeCompare(a.date));
-  }
-  if (apiSort === "date") {
-    return merged.sort((a, b) => a.date.localeCompare(b.date));
-  }
-  // recent — each section already came back newest-listed; keep section order
-  // (this week → next week → later) which matches how Discover reads forward.
-  return merged;
 }

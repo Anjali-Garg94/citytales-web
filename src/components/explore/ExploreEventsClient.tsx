@@ -195,6 +195,8 @@ export default function ExploreEventsClient({
   sort: sortProp = "recent",
   /** Show time-window chips (Start exploring / browse). Hide for vibe-only. */
   showWhenChips = true,
+  /** From Start exploring only — scroll when-strip to show Today first. */
+  pinWhenStripStart = false,
 }: {
   categories: ExploreCategory[];
   events: MonthEvent[];
@@ -203,9 +205,10 @@ export default function ExploreEventsClient({
   when?: ExploreWhen;
   sort?: ExploreSort;
   showWhenChips?: boolean;
+  pinWhenStripStart?: boolean;
 }) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const categoryStripRef = useRef<HTMLDivElement>(null);
   const whenStripRef = useRef<HTMLDivElement>(null);
   const [pendingCategory, setPendingCategory] = useState<string | null>(null);
@@ -215,23 +218,45 @@ export default function ExploreEventsClient({
   const activeCategoryId = pendingCategory ?? initialCategoryId;
   const when = pendingWhen ?? whenProp;
   const sort = pendingSort ?? sortProp;
+
+  // Only show the loader while server props still disagree with what we asked for.
+  // Clearing pending on any prop change (old behavior) + rapid taps could leave
+  // pending set while whenProp never "changed" again → infinite "Loading events…".
   const isLoading =
-    isPending ||
-    pendingWhen !== null ||
-    pendingCategory !== null ||
-    pendingSort !== null;
+    (pendingWhen !== null && pendingWhen !== whenProp) ||
+    (pendingCategory !== null && pendingCategory !== initialCategoryId) ||
+    (pendingSort !== null && pendingSort !== sortProp);
+
+  // Drop pending once the matching server props arrive (including round-trips
+  // that end on the same value we started from after a cancelled intermediate tap).
+  useEffect(() => {
+    if (pendingWhen !== null && pendingWhen === whenProp) {
+      setPendingWhen(null);
+    }
+  }, [whenProp, pendingWhen]);
 
   useEffect(() => {
-    setPendingCategory(null);
-  }, [initialCategoryId]);
+    if (pendingCategory !== null && pendingCategory === initialCategoryId) {
+      setPendingCategory(null);
+    }
+  }, [initialCategoryId, pendingCategory]);
 
   useEffect(() => {
-    setPendingWhen(null);
-  }, [whenProp]);
+    if (pendingSort !== null && pendingSort === sortProp) {
+      setPendingSort(null);
+    }
+  }, [sortProp, pendingSort]);
 
+  // Safety net — never leave the list stuck spinning if a navigation is dropped.
   useEffect(() => {
-    setPendingSort(null);
-  }, [sortProp]);
+    if (!isLoading) return;
+    const t = window.setTimeout(() => {
+      setPendingWhen(null);
+      setPendingCategory(null);
+      setPendingSort(null);
+    }, 12000);
+    return () => window.clearTimeout(t);
+  }, [isLoading]);
 
   useEffect(() => {
     const strip = categoryStripRef.current;
@@ -252,6 +277,14 @@ export default function ExploreEventsClient({
   useEffect(() => {
     const strip = whenStripRef.current;
     if (!strip || !showWhenChips) return;
+
+    // Browse all: never center the Browse all chip.
+    // Only Start exploring (pinWhenStripStart) resets scroll to Today.
+    if (when === "all") {
+      if (pinWhenStripStart) strip.scrollLeft = 0;
+      return;
+    }
+
     const chip = strip.querySelector<HTMLElement>(
       `[data-when-id="${CSS.escape(when)}"]`,
     );
@@ -263,7 +296,7 @@ export default function ExploreEventsClient({
         block: "nearest",
       });
     });
-  }, [when, showWhenChips]);
+  }, [when, showWhenChips, pinWhenStripStart]);
 
   const sortLocked = when === "today" || when === "tomorrow";
 
@@ -287,8 +320,10 @@ export default function ExploreEventsClient({
   }) {
     const params = new URLSearchParams();
 
+    // Always keep `when` in the URL (including `all`) so a category change
+    // never drops the time window / hides the Today–Browse all row.
     const nextWhen = next.when !== undefined ? next.when : when;
-    if (nextWhen && nextWhen !== "all") params.set("when", nextWhen);
+    params.set("when", nextWhen);
 
     const category =
       next.category !== undefined ? next.category : activeCategoryId;
@@ -296,24 +331,23 @@ export default function ExploreEventsClient({
 
     const sortLocked = nextWhen === "today" || nextWhen === "tomorrow";
     const nextSort = sortLocked
-      ? "recent"
+      ? undefined
       : next.sort !== undefined
         ? next.sort
         : sort;
     if (nextSort && nextSort !== "recent") params.set("sort", nextSort);
 
-    const qs = params.toString();
-    return qs ? `/explore-events?${qs}` : "/explore-events";
+    return `/explore-events?${params.toString()}`;
   }
 
   function selectWhen(id: ExploreWhen) {
     if (id === when) return;
     setPendingWhen(id);
-    // Today / Tomorrow lock to recently added — drop any prior sort from the URL.
+    // Today / Tomorrow: backend owns start-time order — drop sort from the URL.
     if (id === "today" || id === "tomorrow") {
-      setPendingSort("recent");
+      setPendingSort("soonest");
       startTransition(() => {
-        router.push(buildHref({ when: id, sort: "recent" }));
+        router.push(buildHref({ when: id }));
       });
       return;
     }
@@ -354,15 +388,10 @@ export default function ExploreEventsClient({
 
   return (
     <div className="mx-auto max-w-[720px] px-5 pb-16 lg:px-8">
-      {/* When chips are on, the header already shows Today / Tomorrow / … —
-          keep one heading only. Vibe-only still needs the category title. */}
-      {showWhenChips ? (
-        <h1 className="sr-only">{heading}</h1>
-      ) : (
-        <h1 className="text-page">{heading}</h1>
-      )}
+      {/* When chips stay visible with categories; header shows City Tales. */}
+      <h1 className="sr-only">{heading}</h1>
 
-      {/* Time windows */}
+      {/* Time windows — always shown so category + when can combine */}
       {showWhenChips ? (
         <div
           ref={whenStripRef}

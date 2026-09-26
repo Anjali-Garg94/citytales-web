@@ -42,9 +42,8 @@ export default function SmoothScroll() {
     };
     frame = requestAnimationFrame(raf);
 
-    // Same-page anchors (Hero's "Start exploring" → #whats-on) would
-    // otherwise jump instantly while everything else glides. Handled here
-    // rather than on the links themselves so the markup stays as it was.
+    // Same-page hash links glide with Lenis; full routes (e.g. /explore-events)
+    // are left to the browser / Next.js router.
     const onClick = (event: MouseEvent) => {
       if (event.defaultPrevented || event.metaKey || event.ctrlKey) return;
       const anchor = (event.target as HTMLElement | null)?.closest?.(

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRightIcon } from "./Icons";
 import Parallax from "./motion/Parallax";
@@ -41,10 +42,13 @@ const cards = [
 
 export default function Hero() {
   const cta = (
-    <a href="/explore-events" className="cta-pill cta-pill--narrow shrink-0">
+    <Link
+      href="/explore-events?when=all&from=home"
+      className="cta-pill cta-pill--narrow shrink-0"
+    >
       Start exploring
       <ArrowRightIcon className="cta-pill__arrow" />
-    </a>
+    </Link>
   );
 
   return (
