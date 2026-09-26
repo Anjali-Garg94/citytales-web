@@ -34,13 +34,9 @@ export default async function OrganisersMarquee() {
           the top and bottom edges too. This way the logos fade into the black
           instead of fading the black into the page. */}
       <div className="bg-[#0C0A09] pb-10 lg:pb-14">
-        {/* Height is sized to show four tiles per column at once:
-              mobile  4 × 125 + 3 × 12 gap = 536, band 560
-              desktop 4 × 210 + 3 × 24 gap = 912, band 930
-            Change a tile height and this has to be recomputed, or the band
-            ends up showing three-and-a-bit. */}
+        {/* Height sized so ~4 circular tiles show at once. */}
         <div
-          className="flex h-[560px] gap-3 px-5 lg:mx-auto lg:h-[930px] lg:max-w-[1280px] lg:gap-6 lg:px-20"
+          className="flex h-[520px] gap-3 px-5 lg:mx-auto lg:h-[920px] lg:max-w-[1280px] lg:gap-6 lg:px-20"
           style={{
             maskImage:
               "linear-gradient(180deg, transparent 0%, #000 12%, #000 88%, transparent 100%)",
@@ -70,13 +66,13 @@ export default async function OrganisersMarquee() {
               {[...column, ...column].map((org, j) => (
                 <div
                   key={`${org.name}-${j}`}
-                  className="relative mb-3 h-[125px] w-full overflow-hidden lg:mb-6 lg:h-[210px]"
+                  className="relative mb-3 mx-auto aspect-square w-[92%] overflow-hidden rounded-full lg:mb-6 lg:w-[88%]"
                 >
                   <Image
                     src={org.image}
                     alt={org.name}
                     fill
-                    sizes="(min-width: 1024px) 30vw, 33vw"
+                    sizes="(min-width: 1024px) 28vw, 32vw"
                     className="object-cover"
                   />
                 </div>

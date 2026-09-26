@@ -48,8 +48,8 @@ export async function getOrganiserColumns(): Promise<Organiser[][]> {
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/public/website/carousel`,
-      // Cache for an hour; organiser lineup changes rarely.
-      { next: { revalidate: 3600 } },
+      // Short TTL so admin carousel swaps show up quickly (was 1 hour).
+      { next: { revalidate: 60 } },
     );
 
     if (!res.ok) {
@@ -635,9 +635,8 @@ function formatMusicDateParts(iso: string | null | undefined): {
 }
 
 /**
- * Fetches the Live music & parties carousel for a tab — THIS_WEEK for
- * "This weekend", ALL for "All" — filtered server-side to the Music &
- * Parties category via categoryId.
+ * Fetches the Live music & parties list — THIS_WEEK for the home / live-music
+ * "This week" tab, filtered server-side to the Music & Parties category.
  *
  * Empty array on failure or absence, same no-invented-listings policy as the
  * other live sections.

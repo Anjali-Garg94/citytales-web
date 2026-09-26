@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
-import type { SectionSort } from "@/lib/api";
+import { useMemo, useState } from "react";
 import { BUSY_THRESHOLD, type MonthEvent } from "@/lib/placeholder-month-data";
 import CategoryPill from "@/components/CategoryPill";
 import { ArrowRightIcon } from "../Icons";
@@ -15,159 +14,21 @@ import MonthEventList from "./MonthEventList";
 
 const ALL = "All";
 
-type WeekPart = "all" | "weekday" | "weekend";
-
-/** Homepage This Month: recently added / by date only (not Discover's latest). */
-type HomeSectionSort = Extract<SectionSort, "recent" | "date">;
-
 /** Rows shown per list before "See everything" takes over. */
 const LIST_LIMIT = 4;
 
 /** This week grid: fixed at 2 columns, capped at 3 rows (6 cards). */
 const THIS_WEEK_GRID_LIMIT = 6;
 
-/** Sat / Sun in Asia/Kolkata. */
-function isWeekendDate(isoDate: string): boolean {
-  const d = new Date(`${isoDate}T12:00:00+05:30`);
-  if (Number.isNaN(d.getTime())) return false;
-  const day = d.getDay();
-  return day === 0 || day === 6;
-}
-
-type SectionBundle = {
-  thisWeek: MonthEvent[];
-  nextUp: MonthEvent[];
-  later: MonthEvent[];
-};
-
-const SORT_OPTIONS: { value: HomeSectionSort; label: string }[] = [
-  { value: "recent", label: "Recently added" },
-  { value: "date", label: "By date" },
-];
-
-function SortByDropdown({
-  sort,
-  onSortChange,
-  label,
-}: {
-  sort: HomeSectionSort;
-  onSortChange: (next: HomeSectionSort) => void;
-  label: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const listId = useId();
-  const current =
-    SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "Recently added";
-
-  useEffect(() => {
-    if (!open) return;
-    function onPointerDown(e: PointerEvent) {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
-    }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
+function SectionHeader({ label }: { label: string }) {
   return (
-    <div ref={rootRef} className="relative z-20 flex items-center gap-1.5">
-      <span className="text-[12px] font-medium whitespace-nowrap text-ink-soft">
-        Sort by
-      </span>
-      <div className="relative">
-        <button
-          type="button"
-          aria-haspopup="listbox"
-          aria-expanded={open}
-          aria-controls={listId}
-          aria-label={`Sort ${label}`}
-          onClick={() => setOpen((v) => !v)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white/80 py-1.5 pr-2.5 pl-3 text-[12.5px] font-semibold text-ink outline-none transition hover:bg-white focus-visible:ring-2 focus-visible:ring-accent/30"
-        >
-          {current}
-          <svg
-            viewBox="0 0 16 16"
-            className={`h-3.5 w-3.5 text-ink-soft transition-transform ${
-              open ? "rotate-180" : ""
-            }`}
-            aria-hidden
-          >
-            <path
-              d="M4 6l4 4 4-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-
-        {open ? (
-          <ul
-            id={listId}
-            role="listbox"
-            aria-label={`Sort ${label}`}
-            className="absolute top-full right-0 z-30 mt-1.5 min-w-full overflow-hidden rounded-2xl border border-black/8 bg-white py-1 shadow-[0_12px_32px_-8px_rgba(30,26,22,0.28)]"
-          >
-            {SORT_OPTIONS.map((opt) => {
-              const selected = opt.value === sort;
-              return (
-                <li key={opt.value} role="option" aria-selected={selected}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSortChange(opt.value);
-                      setOpen(false);
-                    }}
-                    className={`flex w-full whitespace-nowrap px-3.5 py-2.5 text-left text-[13px] font-semibold transition hover:bg-[#F7F7F8] ${
-                      selected ? "text-accent" : "text-ink"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function SectionHeader({
-  label,
-  sort,
-  onSortChange,
-}: {
-  label: string;
-  sort: HomeSectionSort;
-  onSortChange: (next: HomeSectionSort) => void;
-}) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-      <RevealGroup stagger={0.08}>
-        <RevealItem>
-          <h3 className="font-serif text-[18px] leading-[1.2] font-semibold tracking-[-0.02em] text-ink lg:text-[20px] lg:leading-[1.15]">
-            {label}
-          </h3>
-        </RevealItem>
-      </RevealGroup>
-
-      <SortByDropdown
-        label={label}
-        sort={sort}
-        onSortChange={onSortChange}
-      />
-    </div>
+    <RevealGroup stagger={0.08}>
+      <RevealItem>
+        <h3 className="font-serif text-[18px] leading-[1.2] font-semibold tracking-[-0.02em] text-ink lg:text-[20px] lg:leading-[1.15]">
+          {label}
+        </h3>
+      </RevealItem>
+    </RevealGroup>
   );
 }
 
@@ -196,17 +57,19 @@ function SeeAllLink({
 }
 
 type Props = {
-  bySort: Record<HomeSectionSort, SectionBundle>;
+  thisWeek: MonthEvent[];
+  nextUp: MonthEvent[];
+  later: MonthEvent[];
   categories: string[];
 };
 
-export default function ThisMonthSectionClient({ bySort, categories }: Props) {
+export default function ThisMonthSectionClient({
+  thisWeek: allThisWeek,
+  nextUp: allNextUp,
+  later: allLater,
+  categories,
+}: Props) {
   const [activeCategory, setActiveCategory] = useState<string>(ALL);
-  const [sort, setSort] = useState<HomeSectionSort>("recent");
-  const [weekPart, setWeekPart] = useState<WeekPart>("all");
-
-  const bundle = bySort[sort];
-  const { thisWeek: allThisWeek, nextUp: allNextUp, later: allLater } = bundle;
 
   const allEvents = useMemo(
     () => [...allThisWeek, ...allNextUp, ...allLater],
@@ -226,21 +89,16 @@ export default function ThisMonthSectionClient({ bySort, categories }: Props) {
             activeCategory.trim().toLowerCase(),
         );
 
-  const thisWeekAll = filter(allThisWeek);
-  const thisWeek = thisWeekAll.filter((e) => {
-    if (weekPart === "all") return true;
-    const weekend = isWeekendDate(e.date);
-    return weekPart === "weekend" ? weekend : !weekend;
-  });
+  const thisWeek = filter(allThisWeek);
   const nextUp = filter(allNextUp);
   const later = filter(allLater);
   const nothingMatches =
-    thisWeekAll.length === 0 && nextUp.length === 0 && later.length === 0;
+    thisWeek.length === 0 && nextUp.length === 0 && later.length === 0;
 
   const isBusy = allEvents.length >= BUSY_THRESHOLD;
 
   function seeAllHref(from: string) {
-    return `/explore-events?from=${from}&sort=${sort}`;
+    return `/explore-events?from=${from}`;
   }
 
   return (
@@ -327,63 +185,20 @@ export default function ThisMonthSectionClient({ bySort, categories }: Props) {
         </div>
       ) : (
         <>
-          {thisWeekAll.length > 0 ? (
+          {thisWeek.length > 0 ? (
             <div
               id="home-this-week"
               className="this-week-panel mt-5 scroll-mt-24 mx-2 rounded-[22px] px-4 py-5 lg:mt-7 lg:mx-8 lg:rounded-[28px] lg:px-6 lg:py-7"
             >
-              <SectionHeader
-                label="This week"
-                sort={sort}
-                onSortChange={setSort}
-              />
+              <SectionHeader label="This week" />
 
-              <div className="mt-3 flex gap-2">
-                {(
-                  [
-                    { id: "weekday" as const, label: "Weekday" },
-                    { id: "weekend" as const, label: "Weekend" },
-                  ] as const
-                ).map((opt) => {
-                  const active = weekPart === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      aria-pressed={active}
-                      onClick={() =>
-                        setWeekPart((prev) =>
-                          prev === opt.id ? "all" : opt.id,
-                        )
-                      }
-                      className={`rounded-full px-3 py-1 text-[12px] font-semibold transition ${
-                        active
-                          ? "bg-ink text-white"
-                          : "bg-white/70 text-ink-soft ring-1 ring-black/8 hover:bg-white hover:text-ink"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  );
-                })}
+              <div className="mt-4 grid grid-cols-2 gap-3.5 lg:mt-5 lg:gap-6">
+                {thisWeek.slice(0, THIS_WEEK_GRID_LIMIT).map((event, i) => (
+                  <MonthEventCard key={event.id} event={event} index={i} />
+                ))}
               </div>
 
-              {thisWeek.length === 0 ? (
-                <p className="mt-5 text-center text-[13px] text-ink-soft">
-                  No {weekPart} events this week.
-                </p>
-              ) : (
-                <div className="mt-4 grid grid-cols-2 gap-3.5 lg:mt-5 lg:gap-6">
-                  {thisWeek.slice(0, THIS_WEEK_GRID_LIMIT).map((event, i) => (
-                    <MonthEventCard key={event.id} event={event} index={i} />
-                  ))}
-                </div>
-              )}
-
-              <SeeAllLink
-                href={seeAllHref("this-week")}
-                variant="glass"
-              >
+              <SeeAllLink href={seeAllHref("this-week")} variant="glass">
                 See all this Week
               </SeeAllLink>
             </div>
@@ -394,16 +209,9 @@ export default function ThisMonthSectionClient({ bySort, categories }: Props) {
               id="home-next-week"
               className="month-list-panel mt-10 scroll-mt-24 mx-2 rounded-[22px] px-4 py-5 lg:mt-16 lg:mx-8 lg:rounded-[28px] lg:px-6 lg:py-7"
             >
-              <SectionHeader
-                label="Next week"
-                sort={sort}
-                onSortChange={setSort}
-              />
+              <SectionHeader label="Next week" />
               <MonthEventList events={nextUp.slice(0, LIST_LIMIT)} />
-              <SeeAllLink
-                href={seeAllHref("next-week")}
-                variant="glass"
-              >
+              <SeeAllLink href={seeAllHref("next-week")} variant="glass">
                 See All Next Week
               </SeeAllLink>
             </div>
@@ -414,11 +222,7 @@ export default function ThisMonthSectionClient({ bySort, categories }: Props) {
               id="home-later"
               className="month-list-panel mt-10 scroll-mt-24 mx-2 rounded-[22px] px-4 py-5 lg:mt-16 lg:mx-8 lg:rounded-[28px] lg:px-6 lg:py-7"
             >
-              <SectionHeader
-                label="Later"
-                sort={sort}
-                onSortChange={setSort}
-              />
+              <SectionHeader label="Later" />
               <MonthEventList events={later.slice(0, LIST_LIMIT)} />
               <SeeAllLink href={seeAllHref("later")} variant="glass">
                 Explore everything upcoming
