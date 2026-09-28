@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import ExploreEventsClient, {
   type ExploreSort,
   type ExploreWhen,
@@ -11,6 +12,8 @@ import {
   type SectionSort,
   type SectionWeekPart,
 } from "@/lib/api";
+import { authHref } from "@/lib/auth-redirect";
+import { getSessionUser } from "@/lib/auth-session";
 import { categoryCoverImage } from "@/lib/category-images";
 
 export const metadata: Metadata = {
@@ -81,6 +84,8 @@ function toApiSort(sort: ExploreSort): SectionSort | undefined {
  * `?sort=recent|soonest|latest` — ignored for today/tomorrow (backend sorts by start time)
  *
  * Browse all uses POST /api/v1/event/filter/v2 (not section GETs).
+ *
+ * Logged-out visitors are sent to /login?next=… and land back here after OTP.
  */
 export default async function ExploreEventsPage({
   searchParams,
@@ -98,6 +103,16 @@ export default async function ExploreEventsPage({
     category: categoryParam,
     sort: sortParam,
   } = await searchParams;
+
+  if (!(await getSessionUser())) {
+    const query = new URLSearchParams();
+    if (whenParam) query.set("when", whenParam);
+    if (from) query.set("from", from);
+    if (categoryParam) query.set("category", categoryParam);
+    if (sortParam) query.set("sort", sortParam);
+    const qs = query.toString();
+    redirect(authHref("login", `/explore-events${qs ? `?${qs}` : ""}`));
+  }
 
   const when = parseWhen(whenParam, from);
   const sortLocked = when === "today" || when === "tomorrow";

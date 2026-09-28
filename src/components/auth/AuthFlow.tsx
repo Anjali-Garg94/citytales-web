@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth, type SessionUser } from "./AuthContext";
 import CityPicker from "./CityPicker";
 import type { City } from "@/lib/api";
+import { authHref } from "@/lib/auth-redirect";
 import { ChevronLeftIcon } from "@/components/Icons";
 
 type Step = "phone" | "otp" | "profile";
@@ -69,9 +70,12 @@ function OtpBoxes({
 export default function AuthFlow({
   mode,
   initialCities,
+  redirectTo = "/",
 }: {
   mode: Mode;
   initialCities: City[];
+  /** Where to land after a successful login / profile — already sanitised by the page. */
+  redirectTo?: string;
 }) {
   const router = useRouter();
   const { setUser, refreshUser } = useAuth();
@@ -207,7 +211,7 @@ export default function AuthFlow({
         return;
       }
 
-      router.push("/");
+      router.replace(redirectTo);
     } catch {
       setError("Network error — try again");
     } finally {
@@ -239,7 +243,7 @@ export default function AuthFlow({
       }
       setUser(data.user);
       void refreshUser();
-      router.push("/");
+      router.replace(redirectTo);
     } catch {
       setError("Network error — try again");
     } finally {
@@ -342,14 +346,14 @@ export default function AuthFlow({
           {mode === "login" ? (
             <p className="mt-2 text-center text-[13px] text-ink-soft">
               New here?{" "}
-              <Link href="/signup" className="font-semibold text-accent-deep no-underline">
+              <Link href={authHref("signup", redirectTo)} className="font-semibold text-accent-deep no-underline">
                 Sign up
               </Link>
             </p>
           ) : mode === "signup" ? (
             <p className="mt-2 text-center text-[13px] text-ink-soft">
               Already have an account?{" "}
-              <Link href="/login" className="font-semibold text-accent-deep no-underline">
+              <Link href={authHref("login", redirectTo)} className="font-semibold text-accent-deep no-underline">
                 Log in
               </Link>
             </p>
