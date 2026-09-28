@@ -11,7 +11,7 @@ export default function Header() {
       {/* Wordmark — same accent blue on Home and Discover */}
       <Link href="/" className="flex shrink-0 items-center no-underline">
         <span className="text-[11px] font-semibold tracking-[0.14em] text-accent uppercase">
-          City Tales
+          CityTales
         </span>
       </Link>
 

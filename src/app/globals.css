@@ -442,6 +442,16 @@ body {
   height: 0.875rem;
 }
 
+.cta-pill.cta-pill--hero {
+  gap: 0.6rem;
+  width: 240px;
+  min-height: 50px;
+  height: 50px;
+  padding: 0 1.5rem;
+  font-size: 16px;
+  font-weight: 600;
+}
+
 .cta-pill:hover:not(:disabled) {
   filter: brightness(1.07) saturate(1.05);
   transform: translateY(-2px);
@@ -485,6 +495,13 @@ body {
     padding: 0 1.5rem;
     font-size: 15px;
     font-weight: 600;
+  }
+
+  .cta-pill.cta-pill--hero {
+    width: 260px;
+    min-height: 52px;
+    height: 52px;
+    font-size: 16.5px;
   }
 }
 

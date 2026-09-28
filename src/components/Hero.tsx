@@ -44,7 +44,7 @@ export default function Hero() {
   const cta = (
     <Link
       href="/explore-events?when=all&from=home"
-      className="cta-pill cta-pill--narrow shrink-0"
+      className="cta-pill cta-pill--hero shrink-0"
     >
       Start exploring
       <ArrowRightIcon className="cta-pill__arrow" />
@@ -57,7 +57,7 @@ export default function Hero() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="flex flex-col justify-center px-5 pt-2 pb-4 lg:justify-start lg:bg-bg lg:px-16 lg:pt-8 lg:pb-14"
+        className="-mt-2 flex flex-col justify-center px-5 pt-0 pb-2 lg:mt-0 lg:justify-start lg:bg-bg lg:px-16 lg:pt-3 lg:pb-14"
       >
         <h1 className="font-serif text-[30px] font-medium leading-[1.1] text-balance text-ink lg:text-[42px] lg:leading-[1.06]">
           <span className="block text-balance">Your city didn&#39;t stay home.</span>
@@ -66,11 +66,10 @@ export default function Hero() {
         <p className="mt-3 max-w-[320px] text-sm leading-[1.6] text-ink-soft lg:mt-5 lg:max-w-[380px] lg:text-[14.5px]">
           Live music, workshops, food, fitness and many more.
         </p>
-        <div className="mt-6 self-start lg:mt-7">{cta}</div>
       </motion.div>
 
-      <div className="relative h-[420px] overflow-hidden px-5 pt-2 pb-8 lg:h-auto lg:pt-11 lg:pr-16 lg:pb-11 lg:pl-6">
-        <div className="relative h-full w-full">
+      <div className="-mt-2 flex flex-col overflow-hidden px-5 pt-0 pb-8 lg:mt-0 lg:pt-4 lg:pr-16 lg:pb-11 lg:pl-6">
+        <div className="relative h-[380px] w-full lg:h-auto lg:min-h-[440px] lg:flex-1">
           {cards.map((card, i) => (
             <motion.div
               key={card.src}
@@ -101,6 +100,14 @@ export default function Hero() {
             </motion.div>
           ))}
         </div>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6, ease: "easeOut" }}
+          className="mt-7 flex justify-center lg:mt-9"
+        >
+          {cta}
+        </motion.div>
       </div>
     </section>
   );
