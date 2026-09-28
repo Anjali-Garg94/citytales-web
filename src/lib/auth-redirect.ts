@@ -6,7 +6,6 @@ export function safeNextPath(value: string | undefined | null, fallback = "/"): 
   return value;
 }
 
-export function authHref(mode: "login" | "signup", next: string): string {
-  const base = mode === "signup" ? "/signup" : "/login";
-  return next === "/" ? base : `${base}?next=${encodeURIComponent(next)}`;
+export function loginHref(next: string): string {
+  return next === "/" ? "/login" : `/login?next=${encodeURIComponent(next)}`;
 }

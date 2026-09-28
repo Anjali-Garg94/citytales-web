@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 
 /**
@@ -20,8 +21,39 @@ import Lenis from "lenis";
  *    fingers get the real thing.
  *  - Under prefers-reduced-motion Lenis never starts at all, so scrolling is
  *    plain native scrolling. Nothing to tear down because nothing ran.
+ *
+ * Every forward route change starts at the top. Lenis keeps its own scroll
+ * target, so a click while it is still gliding would otherwise carry that
+ * momentum onto the next page. Back/forward keeps the browser's restored spot.
  */
 export default function SmoothScroll() {
+  const pathname = usePathname();
+  const lenisRef = useRef<Lenis | null>(null);
+  const isFirstPath = useRef(true);
+  const fromHistory = useRef(false);
+
+  useEffect(() => {
+    const onPop = () => {
+      fromHistory.current = true;
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  useEffect(() => {
+    if (isFirstPath.current) {
+      isFirstPath.current = false;
+      return;
+    }
+    if (fromHistory.current) {
+      fromHistory.current = false;
+      return;
+    }
+    if (window.location.hash) return;
+    lenisRef.current?.scrollTo(0, { immediate: true, force: true });
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -34,6 +66,7 @@ export default function SmoothScroll() {
       wheelMultiplier: 1,
       syncTouch: false,
     });
+    lenisRef.current = lenis;
 
     let frame = 0;
     const raf = (time: number) => {
@@ -70,6 +103,7 @@ export default function SmoothScroll() {
       document.removeEventListener("click", onClick);
       cancelAnimationFrame(frame);
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
 

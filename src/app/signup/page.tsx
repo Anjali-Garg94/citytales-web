@@ -1,26 +1,12 @@
-import type { Metadata } from "next";
-import AuthFlow from "@/components/auth/AuthFlow";
-import PageShell from "@/components/PageShell";
-import { getCities } from "@/lib/api";
-import { safeNextPath } from "@/lib/auth-redirect";
+import { redirect } from "next/navigation";
+import { loginHref, safeNextPath } from "@/lib/auth-redirect";
 
-export const metadata: Metadata = {
-  title: "Sign up | CityTales",
-};
-
+/** Sign-up is folded into login — old links still land somewhere useful. */
 export default async function SignupPage({
   searchParams,
 }: {
   searchParams: Promise<{ next?: string }>;
 }) {
-  const [{ next }, cities] = await Promise.all([searchParams, getCities()]);
-  return (
-    <PageShell>
-      <AuthFlow
-        mode="signup"
-        initialCities={cities}
-        redirectTo={safeNextPath(next)}
-      />
-    </PageShell>
-  );
+  const { next } = await searchParams;
+  redirect(loginHref(safeNextPath(next)));
 }

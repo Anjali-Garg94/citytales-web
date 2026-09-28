@@ -23,7 +23,7 @@ export function useSaveEvent(eventId: string, cityId?: string | null) {
 
       if (!user) {
         window.alert("Please log in or sign up to save events.");
-        openAuthModal("login");
+        openAuthModal();
         return;
       }
 

@@ -120,13 +120,6 @@ export default function HeaderMobileMenu() {
                 >
                   Login
                 </Link>
-                <Link
-                  href="/signup"
-                  onClick={() => setOpen(false)}
-                  className="block rounded-xl px-2.5 py-2.5 text-[16px] font-semibold tracking-[-0.015em] text-ink no-underline transition hover:bg-black/[0.04]"
-                >
-                  Sign up
-                </Link>
               </div>
             )}
           </div>

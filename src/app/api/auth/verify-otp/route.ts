@@ -44,14 +44,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // cityId/userName only seed a brand-new FIRST_TIME record — the profile
-    // step (complete-profile) is what sets these properly, so a placeholder
-    // here is fine and is ignored entirely for a returning user.
+    // Unknown numbers are registered here (Ludhiana, no name) — the website has
+    // no profile step. Returning users keep their existing name and city.
     const auth = await validateOtp({
       phone,
       otp,
       cityId: CITY_ID,
-      userName: "New User",
+      userName: "",
     });
 
     await setSession({

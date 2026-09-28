@@ -3,7 +3,6 @@ import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthContext";
 import MotionProvider from "@/components/motion/MotionProvider";
 import SmoothScroll from "@/components/motion/SmoothScroll";
-import { getCities } from "@/lib/api";
 
 /**
  * Helvetica Neue is used site-wide, for body copy and the headings that use
@@ -16,18 +15,14 @@ export const metadata: Metadata = {
     "Markets, gigs, workshops, and meetups — find out what's happening around you before everyone else does.",
 };
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
-  // Loaded once here rather than client-side from the sign-up modal — the
-  // city picker on /signup and /complete-profile starts already populated.
-  const cities = await getCities();
-
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-bg text-ink font-sans">
         <MotionProvider>
           {/* Renders nothing — starts Lenis for wheel/trackpad scrolling */}
           <SmoothScroll />
-          <AuthProvider cities={cities}>{children}</AuthProvider>
+          <AuthProvider>{children}</AuthProvider>
         </MotionProvider>
       </body>
     </html>

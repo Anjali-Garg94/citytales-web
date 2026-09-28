@@ -37,7 +37,7 @@ function LiveMusicCard({
       if (saving) return;
       if (!user) {
         window.alert("Please log in or sign up to save events.");
-        openAuthModal("login");
+        openAuthModal();
         return;
       }
       const next = !saved;

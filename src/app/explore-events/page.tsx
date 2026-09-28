@@ -12,7 +12,7 @@ import {
   type SectionSort,
   type SectionWeekPart,
 } from "@/lib/api";
-import { authHref } from "@/lib/auth-redirect";
+import { loginHref } from "@/lib/auth-redirect";
 import { getSessionUser } from "@/lib/auth-session";
 import { categoryCoverImage } from "@/lib/category-images";
 
@@ -111,7 +111,7 @@ export default async function ExploreEventsPage({
     if (categoryParam) query.set("category", categoryParam);
     if (sortParam) query.set("sort", sortParam);
     const qs = query.toString();
-    redirect(authHref("login", `/explore-events${qs ? `?${qs}` : ""}`));
+    redirect(loginHref(`/explore-events${qs ? `?${qs}` : ""}`));
   }
 
   const when = parseWhen(whenParam, from);

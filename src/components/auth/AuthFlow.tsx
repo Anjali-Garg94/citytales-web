@@ -4,13 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth, type SessionUser } from "./AuthContext";
-import CityPicker from "./CityPicker";
-import type { City } from "@/lib/api";
-import { authHref } from "@/lib/auth-redirect";
 import { ChevronLeftIcon } from "@/components/Icons";
 
-type Step = "phone" | "otp" | "profile";
-type Mode = "login" | "signup" | "complete-profile";
+type Step = "phone" | "otp";
 
 const RESEND_SECONDS = 30;
 const MAX_RESENDS = 3;
@@ -63,33 +59,22 @@ function OtpBoxes({
 }
 
 /**
- * Full-page auth flow matching the app:
- * login / signup: phone → OTP → (profile if FIRST_TIME on signup)
- * complete-profile: name + city only (after OTP elsewhere)
+ * Single login flow: phone → OTP → in.
+ * verify-otp registers unknown numbers on the spot (Ludhiana, empty name),
+ * so there is no separate sign-up or profile step.
  */
 export default function AuthFlow({
-  mode,
-  initialCities,
   redirectTo = "/",
 }: {
-  mode: Mode;
-  initialCities: City[];
-  /** Where to land after a successful login / profile — already sanitised by the page. */
+  /** Where to land after a successful login — already sanitised by the page. */
   redirectTo?: string;
 }) {
   const router = useRouter();
-  const { setUser, refreshUser } = useAuth();
+  const { setUser } = useAuth();
 
-  const [step, setStep] = useState<Step>(
-    mode === "complete-profile" ? "profile" : "phone",
-  );
+  const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
-  const [name, setName] = useState("");
-  const [cities, setCities] = useState<City[]>(initialCities);
-  const [cityId, setCityId] = useState(initialCities[0]?.id ?? "");
-  const [citiesError, setCitiesError] = useState(initialCities.length === 0);
-  const [citiesLoading, setCitiesLoading] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [resendIn, setResendIn] = useState(0);
@@ -100,52 +85,6 @@ export default function AuthFlow({
     const t = setTimeout(() => setResendIn((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [resendIn]);
-
-  // complete-profile: must already have a FIRST_TIME session
-  useEffect(() => {
-    if (mode !== "complete-profile") return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/auth/me", { cache: "no-store" });
-        const data = (await res.json()) as { user: SessionUser | null };
-        if (cancelled) return;
-        if (!data.user) {
-          router.replace("/signup");
-          return;
-        }
-        if (data.user.status !== "FIRST_TIME") {
-          router.replace("/");
-          return;
-        }
-        setUser(data.user);
-        setName(data.user.name ?? "");
-        if (data.user.cityId) setCityId(data.user.cityId);
-      } catch {
-        if (!cancelled) router.replace("/signup");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [mode, router, setUser]);
-
-  async function reloadCities() {
-    setCitiesLoading(true);
-    setCitiesError(false);
-    try {
-      const res = await fetch("/api/cities", { cache: "no-store" });
-      const data = (await res.json()) as { cities?: City[] };
-      const list = Array.isArray(data.cities) ? data.cities : [];
-      setCities(list);
-      setCitiesError(list.length === 0);
-      if (list[0] && !cityId) setCityId(list[0].id);
-    } catch {
-      setCitiesError(true);
-    } finally {
-      setCitiesLoading(false);
-    }
-  }
 
   async function submitPhone(isResend = false) {
     setError("");
@@ -202,15 +141,6 @@ export default function AuthFlow({
         return;
       }
       setUser(data.user);
-
-      if (data.user.status === "FIRST_TIME") {
-        setName(data.user.name ?? "");
-        if (data.user.cityId) setCityId(data.user.cityId);
-        // Same Complete Profile / Sign up step whether they entered via login or signup
-        setStep("profile");
-        return;
-      }
-
       router.replace(redirectTo);
     } catch {
       setError("Network error — try again");
@@ -219,94 +149,34 @@ export default function AuthFlow({
     }
   }
 
-  async function submitProfile() {
+  function backToPhone() {
     setError("");
-    if (name.trim().length < 2) {
-      setError("Enter your name");
-      return;
-    }
-    if (!cityId) {
-      setError("Choose a city");
-      return;
-    }
-    setBusy(true);
-    try {
-      const res = await fetch("/api/auth/complete-profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), cityId }),
-      });
-      const data = (await res.json()) as { user?: SessionUser; message?: string };
-      if (!res.ok || !data.user) {
-        setError(data.message || "Could not save your profile");
-        return;
-      }
-      setUser(data.user);
-      void refreshUser();
-      router.replace(redirectTo);
-    } catch {
-      setError("Network error — try again");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const heading =
-    step === "profile"
-      ? "Complete Your Profile"
-      : mode === "login"
-        ? "Log in or Sign up"
-        : mode === "signup"
-          ? "Sign up"
-          : "Complete Your Profile";
-
-  const showBack =
-    step === "otp" ||
-    step === "profile" ||
-    mode === "complete-profile";
-
-  function goBack() {
-    setError("");
-    if (step === "otp") {
-      setStep("phone");
-      setOtp("");
-      return;
-    }
-    if (step === "profile" && mode !== "complete-profile") {
-      setStep("otp");
-      return;
-    }
-    router.push(mode === "complete-profile" ? "/login" : "/");
+    setStep("phone");
+    setOtp("");
   }
 
   return (
     <div className="mx-auto flex w-full max-w-[420px] flex-col px-5 py-10 lg:py-16">
-      {showBack ? (
+      {step === "otp" ? (
         <button
           type="button"
-          onClick={goBack}
+          onClick={backToPhone}
           aria-label="Back"
           className="mb-6 flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink"
         >
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
-      ) : (
-        <Link
-          href="/"
-          className="mb-8 text-[11px] font-semibold tracking-[0.14em] text-ink uppercase no-underline"
-        >
-          City Tales
-        </Link>
-      )}
+      ) : null}
 
       <h1 className="font-serif text-[28px] leading-[1.15] font-semibold text-ink lg:text-[34px]">
-        {heading}
+        Log in
       </h1>
 
       {step === "phone" ? (
         <div className="mt-6 flex flex-col gap-4">
           <p className="text-[14px] text-ink-soft">
-            We&apos;ll text you a one-time code.
+            We&apos;ll text you a one-time code. New here? Your account is created
+            automatically.
           </p>
 
           <div>
@@ -343,21 +213,17 @@ export default function AuthFlow({
             {busy ? "Sending…" : "Send OTP"}
           </button>
 
-          {mode === "login" ? (
-            <p className="mt-2 text-center text-[13px] text-ink-soft">
-              New here?{" "}
-              <Link href={authHref("signup", redirectTo)} className="font-semibold text-accent-deep no-underline">
-                Sign up
-              </Link>
-            </p>
-          ) : mode === "signup" ? (
-            <p className="mt-2 text-center text-[13px] text-ink-soft">
-              Already have an account?{" "}
-              <Link href={authHref("login", redirectTo)} className="font-semibold text-accent-deep no-underline">
-                Log in
-              </Link>
-            </p>
-          ) : null}
+          <p className="mt-1 text-center text-[11.5px] leading-[1.5] text-ink-soft">
+            By continuing, you agree to our{" "}
+            <Link href="/terms" className="font-semibold text-accent-deep no-underline">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="font-semibold text-accent-deep no-underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
         </div>
       ) : null}
 
@@ -395,67 +261,6 @@ export default function AuthFlow({
               : resendIn > 0
                 ? `Resend OTP in ${resendIn}s`
                 : "Resend OTP"}
-          </button>
-        </div>
-      ) : null}
-
-      {step === "profile" ? (
-        <div className="mt-6 flex flex-col gap-4">
-          <div>
-            <p className="text-[15px] font-semibold text-ink">Almost there!</p>
-            <p className="mt-0.5 text-[13px] text-ink-soft">
-              Just a few details to personalize your experience.
-            </p>
-          </div>
-
-          <div>
-            <label className="mb-1.5 block text-[12px] font-semibold text-ink">
-              Full Name <span className="text-[#C23B3B]">*</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-full border border-line bg-white px-4 py-2.5 text-[16px] text-ink outline-none focus:border-accent lg:text-[14px]"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1.5 block text-[12px] font-semibold text-ink">
-              City <span className="text-[#C23B3B]">*</span>
-            </label>
-            <CityPicker
-              cities={cities}
-              value={cityId}
-              onChange={setCityId}
-              loading={citiesLoading}
-              error={citiesError}
-              onRetry={() => void reloadCities()}
-            />
-          </div>
-
-          {error ? <p className="text-[12.5px] text-[#C23B3B]">{error}</p> : null}
-
-          <p className="text-[11.5px] leading-[1.5] text-ink-soft">
-            By continuing, you agree to our{" "}
-            <Link href="/terms" className="font-semibold text-accent-deep no-underline">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link href="/privacy" className="font-semibold text-accent-deep no-underline">
-              Privacy Policy
-            </Link>
-            .
-          </p>
-
-          <button
-            type="button"
-            disabled={busy || name.trim().length < 2 || !cityId}
-            onClick={() => void submitProfile()}
-            className="cta-pill cta-pill--block"
-          >
-            {busy ? "Saving…" : "Continue"}
           </button>
         </div>
       ) : null}

@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import type { City } from "@/lib/api";
+import { loginHref } from "@/lib/auth-redirect";
 
 /** Mirrors AuthUser from auth-api.ts — kept separate so client code never imports a server-only module. */
 export type SessionUser = {
@@ -28,27 +28,16 @@ type AuthContextValue = {
   user: SessionUser | null;
   /** True until the initial /api/auth/me check resolves. */
   loading: boolean;
-  /**
-   * Navigate to /login or /signup (replaces the old modal).
-   * Kept name-stable for call sites that already use openAuthModal("login").
-   */
-  openAuthModal: (mode?: "login" | "signup") => void;
+  /** Navigate to /login, returning to the current page afterwards. */
+  openAuthModal: () => void;
   refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: SessionUser | null) => void;
-  /** Server-loaded at layout render — the sign-up city picker never needs its own client fetch or retry banner. */
-  cities: City[];
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({
-  children,
-  cities,
-}: {
-  children: ReactNode;
-  cities: City[];
-}) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -97,12 +86,9 @@ export function AuthProvider({
     }
   }, []);
 
-  const openAuthModal = useCallback(
-    (mode: "login" | "signup" = "login") => {
-      router.push(mode === "signup" ? "/signup" : "/login");
-    },
-    [router],
-  );
+  const openAuthModal = useCallback(() => {
+    router.push(loginHref(window.location.pathname + window.location.search));
+  }, [router]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -112,9 +98,8 @@ export function AuthProvider({
       refreshUser,
       logout,
       setUser,
-      cities,
     }),
-    [user, loading, openAuthModal, refreshUser, logout, cities],
+    [user, loading, openAuthModal, refreshUser, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

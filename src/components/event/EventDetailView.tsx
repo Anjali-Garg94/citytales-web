@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { EventDetail } from "@/lib/api";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -9,7 +8,6 @@ import EventBottomSheet from "@/components/event/EventBottomSheet";
 import {
   BookmarkIcon,
   CalendarIcon,
-  ChevronLeftIcon,
   ChevronRightIcon,
   CloseIcon,
   GalleryIcon,
@@ -101,7 +99,7 @@ export default function EventDetailView({ event }: { event: EventDetail }) {
 
     if (!user) {
       window.alert("Please log in or sign up to save events.");
-      openAuthModal("login");
+      openAuthModal();
       return;
     }
 
@@ -175,20 +173,9 @@ export default function EventDetailView({ event }: { event: EventDetail }) {
 
   return (
     <article className="pb-16 lg:pb-24">
-      {/* Back above the cover — fixed gap, then the image */}
-      <div className="mx-auto max-w-[720px] px-4 pt-4 lg:px-6 lg:pt-6">
-        <Link
-          href="/"
-          aria-label="Back"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-ink no-underline transition hover:border-ink lg:h-11 lg:w-11"
-        >
-          <ChevronLeftIcon className="h-5 w-5" />
-        </Link>
-
-        <div className="h-4 lg:h-5" aria-hidden />
-
-        {/* Cover: 93% wide, 44vh tall (capped on desktop), 24px radius */}
-        <div className="relative mx-auto h-[44vh] max-h-[520px] min-h-[240px] w-[93%] overflow-hidden rounded-[24px] border border-white/25 lg:max-h-[560px]">
+      <div className="mx-auto max-w-[720px] px-4 pt-3 lg:px-6 lg:pt-5">
+        {/* Cover: 93% wide, tall portrait crop (capped on desktop), 24px radius */}
+        <div className="relative mx-auto h-[60vh] max-h-[680px] min-h-[340px] w-[93%] overflow-hidden rounded-[24px] border border-white/25 lg:h-[66vh] lg:max-h-[760px]">
           <Image
             src={event.coverImage}
             alt=""

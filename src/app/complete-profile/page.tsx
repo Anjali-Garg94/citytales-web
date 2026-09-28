@@ -1,17 +1,6 @@
-import type { Metadata } from "next";
-import AuthFlow from "@/components/auth/AuthFlow";
-import PageShell from "@/components/PageShell";
-import { getCities } from "@/lib/api";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Complete Your Profile | CityTales",
-};
-
-export default async function CompleteProfilePage() {
-  const cities = await getCities();
-  return (
-    <PageShell>
-      <AuthFlow mode="complete-profile" initialCities={cities} />
-    </PageShell>
-  );
+/** The profile step was removed — new accounts are usable straight after OTP. */
+export default function CompleteProfilePage() {
+  redirect("/");
 }
