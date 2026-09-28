@@ -37,7 +37,7 @@ function OtpBoxes({
         value={value.replace(/\D/g, "").slice(0, 6)}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 6))}
-        className="absolute inset-0 z-10 cursor-text opacity-0"
+        className="absolute inset-0 z-10 cursor-text text-[16px] opacity-0"
         aria-label="6-digit OTP"
       />
       <div
@@ -323,7 +323,7 @@ export default function AuthFlow({
                   setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
                 }
                 onKeyDown={(e) => e.key === "Enter" && void submitPhone()}
-                className="min-w-0 flex-1 bg-transparent px-3.5 py-2.5 text-[14px] text-ink outline-none"
+                className="min-w-0 flex-1 bg-transparent px-3.5 py-2.5 text-[16px] text-ink outline-none lg:text-[14px]"
               />
             </div>
           </div>
@@ -413,7 +413,7 @@ export default function AuthFlow({
               placeholder="Full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-full border border-line bg-white px-4 py-2.5 text-[14px] text-ink outline-none focus:border-accent"
+              className="w-full rounded-full border border-line bg-white px-4 py-2.5 text-[16px] text-ink outline-none focus:border-accent lg:text-[14px]"
             />
           </div>
 

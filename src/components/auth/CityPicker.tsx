@@ -80,7 +80,7 @@ export default function CityPicker({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search..."
               autoFocus
-              className="w-full rounded-full border border-line bg-white px-3.5 py-2 text-[13px] text-ink outline-none focus:border-accent"
+              className="w-full rounded-full border border-line bg-white px-3.5 py-2 text-[16px] text-ink outline-none focus:border-accent lg:text-[13px]"
             />
           </div>
           <ul className="max-h-56 overflow-y-auto py-1">
