@@ -8,9 +8,9 @@ import EventBottomSheet from "@/components/event/EventBottomSheet";
 import {
   BookmarkIcon,
   CalendarIcon,
-  ChevronRightIcon,
   CloseIcon,
   GalleryIcon,
+  InstagramIcon,
   PinIcon,
   ShareIcon,
 } from "@/components/Icons";
@@ -43,6 +43,17 @@ function bookingHref(value: string): string | undefined {
   }
   if (/^https?:\/\//i.test(raw)) return raw;
   return `https://${raw}`;
+}
+
+function isInstagramLabel(label: string): boolean {
+  return /^insta(gram)?$/i.test(label.trim());
+}
+
+/** "@name", "name", or "instagram.com/name/..." -> "name" */
+function instagramHandle(value: string): string {
+  const raw = value.trim();
+  const fromUrl = raw.match(/instagram\.com\/([^/?#]+)/i);
+  return (fromUrl ? fromUrl[1] : raw).replace(/^@/, "");
 }
 
 export default function EventDetailView({
@@ -182,7 +193,7 @@ export default function EventDetailView({
     <article className="pb-16 lg:pb-24">
       <div className="mx-auto max-w-[720px] px-4 pt-3 lg:px-6 lg:pt-5">
         {/* Cover: 93% wide, tall portrait crop (capped on desktop), 24px radius */}
-        <div className="relative mx-auto h-[60vh] max-h-[680px] min-h-[340px] w-[93%] overflow-hidden rounded-[24px] border border-white/25 lg:h-[66vh] lg:max-h-[760px]">
+        <div className="relative mx-auto h-[52vh] max-h-[600px] min-h-[320px] w-[93%] overflow-hidden rounded-[24px] border border-white/25 lg:h-[58vh] lg:max-h-[680px]">
           <Image
             src={event.coverImage}
             alt=""
@@ -311,48 +322,61 @@ export default function EventDetailView({
         {/* Booking — only when options exist */}
         {event.bookingOptions.length > 0 ? (
           <section className="mt-9 lg:mt-11">
-            <h2 className="text-[20px] font-bold text-ink lg:text-[22px]">
-              Booking
-            </h2>
-            <div className="mt-3.5 flex flex-col gap-2.5">
-              {event.bookingOptions.map((opt) => {
-                const href = bookingHref(opt.value);
-                const subtitle = bookingSubtitle(opt.value);
-                const className =
-                  "flex items-center justify-between gap-3 rounded-[14px] border border-[#E5E7EB] px-[3.5vw] py-[1.4vh] no-underline transition hover:border-ink lg:rounded-2xl lg:px-5 lg:py-4";
+            <p className="text-[15px] leading-[1.4] font-semibold text-ink lg:text-[17px]">
+              Contact the organizers directly
+            </p>
+            <div className="mt-3 rounded-[18px] bg-[#FBEDEF] p-3 lg:rounded-[22px] lg:p-5">
+              <div
+                className={`grid grid-cols-2 gap-2.5 lg:gap-3 ${
+                  event.bookingOptions.length > 2 ? "sm:grid-cols-3" : ""
+                }`}
+              >
+                {event.bookingOptions.map((opt) => {
+                  const isInstagram = isInstagramLabel(opt.label);
+                  const handle = isInstagram ? instagramHandle(opt.value) : "";
+                  const href =
+                    isInstagram && handle && !/instagram\.com/i.test(opt.value)
+                      ? `https://instagram.com/${encodeURIComponent(handle)}`
+                      : bookingHref(opt.value);
+                  const valueText =
+                    isInstagram && handle
+                      ? `instagram.com/${handle}`
+                      : bookingSubtitle(opt.value);
+                  const buttonClass =
+                    "mt-3 flex h-9 items-center justify-center gap-1.5 rounded-full bg-[#9B2C4B] px-3 text-[13px] font-semibold text-white no-underline transition hover:bg-[#7E2140] lg:h-10 lg:text-[14px]";
 
-                const inner = (
-                  <>
-                    <div className="min-w-0">
-                      <div className="text-[15px] font-semibold text-ink lg:text-[16px]">
-                        {opt.label}
+                  return (
+                    <div
+                      key={opt.id}
+                      className="flex min-w-0 flex-col rounded-[12px] bg-white p-3 lg:rounded-[14px] lg:p-4"
+                    >
+                      <div
+                        title={valueText}
+                        className="w-full min-w-0 overflow-hidden text-[14px] font-bold text-ellipsis whitespace-nowrap text-ink lg:text-[15.5px]"
+                      >
+                        {valueText}
                       </div>
-                      <div className="mt-0.5 truncate text-[13px] text-ink-soft lg:text-[14px]">
-                        {subtitle}
-                      </div>
+                      {href ? (
+                        <a
+                          href={href}
+                          className={buttonClass}
+                          onClick={() => trackBookingClick(opt.id)}
+                          aria-label={isInstagram ? "Instagram" : undefined}
+                          {...(href.startsWith("http")
+                            ? { target: "_blank", rel: "noopener noreferrer" }
+                            : {})}
+                        >
+                          {isInstagram ? (
+                            <InstagramIcon className="h-[18px] w-[18px] lg:h-5 lg:w-5" />
+                          ) : (
+                            <span className="min-w-0 truncate">{opt.label}</span>
+                          )}
+                        </a>
+                      ) : null}
                     </div>
-                    <ChevronRightIcon className="h-4 w-4 shrink-0 text-ink-soft" />
-                  </>
-                );
-
-                return href ? (
-                  <a
-                    key={opt.id}
-                    href={href}
-                    className={className}
-                    onClick={() => trackBookingClick(opt.id)}
-                    {...(href.startsWith("http")
-                      ? { target: "_blank", rel: "noopener noreferrer" }
-                      : {})}
-                  >
-                    {inner}
-                  </a>
-                ) : (
-                  <div key={opt.id} className={className}>
-                    {inner}
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </section>
         ) : null}
