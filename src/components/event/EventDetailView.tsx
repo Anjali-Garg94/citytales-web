@@ -45,7 +45,14 @@ function bookingHref(value: string): string | undefined {
   return `https://${raw}`;
 }
 
-export default function EventDetailView({ event }: { event: EventDetail }) {
+export default function EventDetailView({
+  event,
+  bookingLocked = false,
+}: {
+  event: EventDetail;
+  /** Event has booking options but the visitor is logged out — options were withheld server-side. */
+  bookingLocked?: boolean;
+}) {
   const { user, loading: authLoading, openAuthModal } = useAuth();
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -288,6 +295,18 @@ export default function EventDetailView({ event }: { event: EventDetail }) {
             </button>
           ) : null}
         </div>
+
+        {bookingLocked ? (
+          <div className="mt-9 flex justify-center lg:mt-11">
+            <button
+              type="button"
+              onClick={openAuthModal}
+              className="cta-pill cta-pill--hero"
+            >
+              Book Now
+            </button>
+          </div>
+        ) : null}
 
         {/* Booking — only when options exist */}
         {event.bookingOptions.length > 0 ? (

@@ -3,12 +3,16 @@ import Link from "next/link";
 import EventDetailView from "@/components/event/EventDetailView";
 import Footer from "@/components/Footer";
 import { getEventById } from "@/lib/api";
+import { getSessionUser } from "@/lib/auth-session";
 
 /**
  * Event detail — GET /api/v1/event/{id}.
  *
  * The route param is named `slug` for historical reasons; live cards pass the
  * backend event id (see getMonthSectionEvents / getMusicPartiesEvents).
+ *
+ * Booking options are only sent to logged-in visitors; everyone else gets a
+ * "Booking information" button that goes through login and back here.
  */
 export async function generateMetadata({
   params,
@@ -26,13 +30,20 @@ export default async function EventPage({
   params,
 }: PageProps<"/events/[slug]">) {
   const { slug } = await params;
-  const event = await getEventById(slug);
+  const [event, user] = await Promise.all([
+    getEventById(slug),
+    getSessionUser(),
+  ]);
+  const bookingLocked = !user && !!event && event.bookingOptions.length > 0;
 
   return (
     <>
       <main className="flex-1 bg-bg">
         {event ? (
-          <EventDetailView event={event} />
+          <EventDetailView
+            event={bookingLocked ? { ...event, bookingOptions: [] } : event}
+            bookingLocked={bookingLocked}
+          />
         ) : (
           <section className="flex min-h-[50vh] flex-col justify-center px-5 py-20 text-center lg:px-20 lg:py-32">
             <h1 className="mx-auto max-w-[560px] text-[32px] leading-[1.15] font-semibold text-ink lg:text-[44px]">

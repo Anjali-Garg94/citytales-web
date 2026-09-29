@@ -83,8 +83,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await fetch("/api/auth/logout", { method: "POST" });
     } finally {
       setUser(null);
+      // Server-rendered, login-gated content (booking options) must re-render.
+      router.refresh();
     }
-  }, []);
+  }, [router]);
 
   const openAuthModal = useCallback(() => {
     router.push(loginHref(window.location.pathname + window.location.search));
