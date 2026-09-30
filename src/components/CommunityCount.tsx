@@ -9,8 +9,16 @@ const DURATION_MS = 1600;
 
 /**
  * Soft social proof — counts up once when scrolled into view.
+ * `variant="hero"` renders it left-aligned without section padding, for the hero column.
  */
-export default function CommunityCount() {
+export default function CommunityCount({
+  variant = "section",
+  className = "",
+}: {
+  variant?: "section" | "hero";
+  className?: string;
+}) {
+  const hero = variant === "hero";
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.45 });
   const [value, setValue] = useState(0);
@@ -22,12 +30,13 @@ export default function CommunityCount() {
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    let frame = 0;
+
     if (reduceMotion) {
-      setValue(TARGET);
-      return;
+      frame = requestAnimationFrame(() => setValue(TARGET));
+      return () => cancelAnimationFrame(frame);
     }
 
-    let frame = 0;
     const start = performance.now();
 
     const tick = (now: number) => {
@@ -45,7 +54,7 @@ export default function CommunityCount() {
   return (
     <section
       ref={ref}
-      className="px-5 py-10 text-center lg:px-20 lg:py-12"
+      className={`${hero ? "text-left" : "px-5 py-10 text-center lg:px-20 lg:py-12"} ${className}`}
       aria-label="Community size"
     >
       <motion.div
@@ -53,18 +62,26 @@ export default function CommunityCount() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.4 }}
         transition={{ duration: 0.7, ease: EASE }}
-        className="mx-auto max-w-[520px]"
+        className={hero ? "" : "mx-auto max-w-[520px]"}
       >
         <p className="text-[12px] font-semibold tracking-[0.14em] text-ink-soft uppercase">
           Already with us
         </p>
 
-        <p className="mt-3 font-serif text-[56px] leading-none font-semibold tracking-[-0.03em] text-ink tabular-nums lg:text-[72px]">
+        <p
+          className={`mt-3 font-serif leading-none font-semibold tracking-[-0.03em] text-ink tabular-nums ${
+            hero ? "text-[56px]" : "text-[56px] lg:text-[72px]"
+          }`}
+        >
           <span className="text-accent">{value.toLocaleString("en-IN")}</span>
           <span className="text-ink">+</span>
         </p>
 
-        <p className="mx-auto mt-4 max-w-[280px] text-[15px] leading-[1.45] text-ink-soft lg:max-w-[340px] lg:text-[16px]">
+        <p
+          className={`mt-4 text-[15px] leading-[1.45] text-ink-soft ${
+            hero ? "max-w-[300px]" : "mx-auto max-w-[280px] lg:max-w-[340px] lg:text-[16px]"
+          }`}
+        >
           people exploring Ludhiana through CityTales
         </p>
       </motion.div>

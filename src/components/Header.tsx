@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import HeaderMobileMenu from "./HeaderMobileMenu";
+import HeaderMenu from "./HeaderMenu";
 import HeaderSearch from "./search/HeaderSearch";
-import { navLinks } from "@/lib/data";
+import { APP_STORE } from "@/lib/apps";
 
 export default function Header() {
   return (
@@ -15,34 +15,19 @@ export default function Header() {
         </span>
       </Link>
 
-      {/* Desktop nav */}
-      <nav className="hidden gap-10 lg:flex">
-        {navLinks.map((link) => (
-          <Link
-            key={link.label}
-            href={link.href}
-            className="text-[13px] font-semibold tracking-[0.03em] text-ink no-underline hover:text-accent"
-          >
-            {link.label}
-          </Link>
-        ))}
-      </nav>
-
-      {/* Mobile: search + hamburger — ml-auto locks them to the right */}
-      <div className="ml-auto flex shrink-0 items-center gap-4 lg:hidden">
-        <HeaderSearch iconClassName="h-5 w-5 text-ink" />
-        <HeaderMobileMenu />
-      </div>
-
-      {/* Desktop: search + CTA */}
-      <div className="hidden items-center gap-[22px] lg:flex">
-        <HeaderSearch iconClassName="h-[19px] w-[19px] text-ink" />
-        <Link
-          href="/get-the-app"
-          className="border border-ink px-5 py-[9px] text-[12.5px] font-semibold tracking-[0.03em] text-ink no-underline hover:bg-ink hover:text-bg"
+      {/* Search + CTA (desktop) + menu — ml-auto locks them to the right */}
+      <div className="ml-auto flex shrink-0 items-center gap-4 lg:gap-[22px]">
+        <HeaderSearch iconClassName="h-5 w-5 text-ink lg:h-[19px] lg:w-[19px]" />
+        <a
+          href={APP_STORE.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Get ${APP_STORE.name} on the App Store`}
+          className="hidden border border-ink px-5 py-[9px] text-[12.5px] font-semibold tracking-[0.03em] text-ink no-underline hover:bg-ink hover:text-bg lg:inline-block"
         >
           Get the app
-        </Link>
+        </a>
+        <HeaderMenu />
       </div>
     </header>
   );

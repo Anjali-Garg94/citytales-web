@@ -17,7 +17,7 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <Hero />
-        <CommunityCount />
+        <CommunityCount className="lg:hidden" />
         <TodayEvents />
         <ThisMonthSection />
         <EventCategories />

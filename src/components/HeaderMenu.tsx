@@ -12,9 +12,9 @@ const CITY_NAME = "Ludhiana";
 type MenuLink = { label: string; href: string };
 
 /**
- * Mobile menu — one dense frosted glass panel.
+ * Header menu (all screen sizes) — one dense frosted glass panel.
  */
-export default function HeaderMobileMenu() {
+export default function HeaderMenu() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { user, loading, logout } = useAuth();
@@ -38,7 +38,7 @@ export default function HeaderMobileMenu() {
   }, [open]);
 
   return (
-    <div className="relative lg:hidden">
+    <div className="relative">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -62,7 +62,7 @@ export default function HeaderMobileMenu() {
             className="fixed inset-0 z-40 bg-black/[0.08]"
           />
 
-          <div className="glass-menu-panel fixed top-[68px] right-4 z-50 w-[min(280px,calc(100vw-2rem))] px-4 py-4 sm:right-5">
+          <div className="glass-menu-panel fixed top-[68px] right-4 z-50 w-[min(280px,calc(100vw-2rem))] px-4 py-4 sm:right-5 lg:top-[74px] lg:right-20">
             <nav>
               <ul className="flex flex-col">
                 {links.map((link) => (

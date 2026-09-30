@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRightIcon } from "./Icons";
 import Parallax from "./motion/Parallax";
+import CommunityCount from "./CommunityCount";
 
 const cards = [
   {
@@ -24,7 +25,7 @@ const cards = [
     alt: "Couple laughing at a nighttime fair with a Ferris wheel behind them",
     parallax: true,
     className:
-      "left-[2%] top-[10%] h-[56%] w-[44%] z-[3] rounded-2xl lg:left-[2%] lg:top-[12%] lg:h-[58%] lg:w-[42%] lg:rounded-[18px]",
+      "left-[2%] top-[10%] h-[56%] w-[44%] z-[3] rounded-2xl lg:left-[3%] lg:top-[12%] lg:h-[58%] lg:w-[47%] lg:rounded-[18px]",
   },
   {
     src: "/images/hero/hero-star-smile.jpg",
@@ -66,6 +67,7 @@ export default function Hero() {
         <p className="mt-3 max-w-[320px] text-sm leading-[1.6] text-ink-soft lg:mt-5 lg:max-w-[380px] lg:text-[14.5px]">
           Live music, workshops, food, fitness and many more.
         </p>
+        <CommunityCount variant="hero" className="mt-12 hidden lg:block" />
       </motion.div>
 
       <div className="-mt-2 flex flex-col overflow-hidden px-5 pt-0 pb-8 lg:mt-0 lg:pt-4 lg:pr-16 lg:pb-11 lg:pl-6">

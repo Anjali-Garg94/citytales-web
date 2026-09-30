@@ -36,7 +36,7 @@ export default async function OrganisersMarquee() {
       <div className="bg-[#0C0A09] pb-10 lg:pb-14">
         {/* Height sized so ~4 circular tiles show at once. */}
         <div
-          className="flex h-[520px] gap-3 px-5 lg:mx-auto lg:h-[920px] lg:max-w-[1280px] lg:gap-6 lg:px-20"
+          className="flex h-[520px] gap-3 px-5 lg:mx-auto lg:h-[720px] lg:max-w-[1280px] lg:gap-6 lg:px-20"
           style={{
             maskImage:
               "linear-gradient(180deg, transparent 0%, #000 12%, #000 88%, transparent 100%)",
@@ -66,13 +66,13 @@ export default async function OrganisersMarquee() {
               {[...column, ...column].map((org, j) => (
                 <div
                   key={`${org.name}-${j}`}
-                  className="relative mb-3 mx-auto aspect-square w-[92%] overflow-hidden rounded-full lg:mb-6 lg:w-[88%]"
+                  className="relative mb-3 mx-auto aspect-square w-[92%] overflow-hidden rounded-full lg:mb-6 lg:w-[52%]"
                 >
                   <Image
                     src={org.image}
                     alt={org.name}
                     fill
-                    sizes="(min-width: 1024px) 28vw, 32vw"
+                    sizes="(min-width: 1024px) 200px, 32vw"
                     className="object-cover"
                   />
                 </div>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { InstagramIcon, ChatIcon } from "./Icons";
 import { CONTACT } from "@/lib/contact";
+import { APP_STORE } from "@/lib/apps";
 
 const cityTalesLinks = [
   { label: "About", href: "/about" },
@@ -37,9 +38,15 @@ export default function Footer() {
               GET THE APP
             </div>
             <div className="flex gap-2.5 lg:flex-col lg:gap-2.5">
-              <div className="w-fit border border-line px-3.5 py-2 text-xs font-medium lg:px-4 lg:py-[9px] lg:text-[12.5px]">
+              <a
+                href={APP_STORE.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Download ${APP_STORE.name} on the App Store`}
+                className="w-fit border border-line px-3.5 py-2 text-xs font-medium text-ink no-underline transition hover:border-ink lg:px-4 lg:py-[9px] lg:text-[12.5px]"
+              >
                 App Store
-              </div>
+              </a>
               <div className="w-fit border border-line px-3.5 py-2 text-xs font-medium lg:px-4 lg:py-[9px] lg:text-[12.5px]">
                 Google Play
               </div>

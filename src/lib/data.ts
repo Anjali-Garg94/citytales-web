@@ -165,12 +165,3 @@ export const eventGrid: GridEvent[] = [
   { image: "/images/events/grid-f.jpg", category: "Exhibitions", title: "Young Printmakers Showcase", venue: "Fine Arts College" },
   { image: "/images/events/grid-g.jpg", category: "Activities", title: "Night Market: Street Food", venue: "Model Town Market" },
 ];
-
-export const navLinks = [
-  { label: "Today", href: "/today" },
-  { label: "Clubs", href: "/clubs" },
-  { label: "Activities", href: "/activities" },
-  { label: "Exhibitions", href: "/exhibitions" },
-  { label: "About", href: "/about" },
-  { label: "Contact us", href: "/contact" },
-];
