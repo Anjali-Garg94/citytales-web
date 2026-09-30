@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { InstagramIcon, ChatIcon } from "./Icons";
+import { CONTACT } from "@/lib/contact";
 
 const cityTalesLinks = [
   { label: "About", href: "/about" },
-  { label: "List your event", href: "/for-organisers" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -13,9 +13,6 @@ export default function Footer() {
       <div className="lg:mx-auto lg:grid lg:max-w-[1280px] lg:grid-cols-[1.4fr_1fr_1fr] lg:gap-10">
         <div>
           <div className="font-serif text-[22px] font-bold lg:text-2xl">CityTales</div>
-          <div className="mt-1.5 text-[11.5px] tracking-[0.04em] text-ink-soft lg:text-xs">
-            WHAT&#39;S ON
-          </div>
           <div className="mt-5 hidden max-w-[260px] text-[13px] leading-[1.6] text-ink-soft lg:block">
             If it&#39;s happening in your city, you&#39;ll find it here.
           </div>
@@ -55,9 +52,23 @@ export default function Footer() {
         <div className="text-[11px] text-ink-soft lg:text-[11.5px]">
           © 2026 CityTales
         </div>
-        <div className="flex gap-3.5 lg:gap-4">
-          <InstagramIcon className="h-4 w-4 text-ink-soft lg:h-[17px] lg:w-[17px]" />
-          <ChatIcon className="h-4 w-4 text-ink-soft lg:h-[17px] lg:w-[17px]" />
+        <div className="flex items-center gap-3.5 lg:gap-4">
+          <a
+            href={`https://www.instagram.com/${CONTACT.instagram}/`}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="CityTales on Instagram"
+            className="text-ink-soft transition hover:text-ink"
+          >
+            <InstagramIcon className="h-4 w-4 lg:h-[17px] lg:w-[17px]" />
+          </a>
+          <Link
+            href="/contact"
+            aria-label="Contact us"
+            className="text-ink-soft transition hover:text-ink"
+          >
+            <ChatIcon className="h-4 w-4 lg:h-[17px] lg:w-[17px]" />
+          </Link>
         </div>
       </div>
     </footer>

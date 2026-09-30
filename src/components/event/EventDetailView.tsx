@@ -6,6 +6,7 @@ import type { EventDetail } from "@/lib/api";
 import { useAuth } from "@/components/auth/AuthContext";
 import EventBottomSheet from "@/components/event/EventBottomSheet";
 import {
+  ArrowRightIcon,
   BookmarkIcon,
   CalendarIcon,
   CloseIcon,
@@ -113,6 +114,15 @@ export default function EventDetailView({
     };
   }, [authLoading, user, event.id, event.cityId]);
 
+  useEffect(() => {
+    if (!galleryOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setGalleryOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [galleryOpen]);
+
   const toggleSave = useCallback(async () => {
     if (savingRef.current) return;
 
@@ -190,19 +200,77 @@ export default function EventDetailView({
 
   const singleSchedule = event.schedule.length === 1 ? event.schedule[0] : null;
 
+  const { bookingLinks, bookingCards } = useMemo(() => {
+    const links: { id: string; label: string; href: string }[] = [];
+    const cards: {
+      id: string;
+      kind: "phone" | "instagram";
+      title: string;
+      subtitle: string;
+      href: string;
+    }[] = [];
+
+    for (const opt of event.bookingOptions) {
+      if (isInstagramLabel(opt.label)) {
+        const handle = instagramHandle(opt.value);
+        if (!handle) continue;
+        cards.push({
+          id: opt.id,
+          kind: "instagram",
+          title: "Follow on Instagram",
+          subtitle: "",
+          href: /instagram\.com/i.test(opt.value)
+            ? (bookingHref(opt.value) ?? "")
+            : `https://instagram.com/${encodeURIComponent(handle)}`,
+        });
+        continue;
+      }
+
+      const href = bookingHref(opt.value);
+      if (!href) continue;
+
+      if (isPhoneBookingValue(opt.value)) {
+        cards.push({
+          id: opt.id,
+          kind: "phone",
+          title: opt.label,
+          subtitle: bookingSubtitle(opt.value),
+          href,
+        });
+      } else {
+        links.push({
+          id: opt.id,
+          label: /^book\s*my\s*show$/i.test(opt.label.trim())
+            ? "Book on BookMyShow"
+            : opt.label,
+          href,
+        });
+      }
+    }
+
+    return { bookingLinks: links, bookingCards: cards };
+  }, [event.bookingOptions]);
+
   return (
     <article className="pb-16 lg:pb-24">
       <div className="mx-auto max-w-[720px] px-4 pt-3 lg:px-6 lg:pt-5">
         {/* Cover: 93% wide, tall portrait crop (capped on desktop), 24px radius */}
         <div className="relative mx-auto h-[52vh] max-h-[600px] min-h-[320px] w-[93%] overflow-hidden rounded-[24px] border border-white/25 lg:h-[58vh] lg:max-h-[680px]">
-          <Image
-            src={event.coverImage}
-            alt=""
-            fill
-            priority
-            sizes="(min-width: 720px) 670px, 93vw"
-            className="object-cover"
-          />
+          <button
+            type="button"
+            onClick={() => setGalleryOpen(true)}
+            aria-label="View full picture"
+            className="absolute inset-0 cursor-zoom-in"
+          >
+            <Image
+              src={event.coverImage}
+              alt=""
+              fill
+              priority
+              sizes="(min-width: 720px) 670px, 93vw"
+              className="object-cover"
+            />
+          </button>
 
           {event.gallery.length > 1 ? (
             <button
@@ -321,98 +389,73 @@ export default function EventDetailView({
         ) : null}
 
         {/* Booking — only when options exist */}
-        {event.bookingOptions.length > 0 ? (
+        {bookingLinks.length > 0 || bookingCards.length > 0 ? (
           <section className="mt-9 lg:mt-11">
-            <p className="text-[15px] leading-[1.4] font-semibold text-ink lg:text-[17px]">
-              Contact the organizers directly
-            </p>
-            <div className="mt-3 rounded-[18px] bg-[#FBEDEF] p-3 lg:rounded-[22px] lg:p-5">
-              <div
-                className={`grid grid-cols-2 gap-2.5 lg:gap-3 ${
-                  event.bookingOptions.length > 2 ? "sm:grid-cols-3" : ""
-                }`}
-              >
-                {event.bookingOptions.map((opt) => {
-                  const isInstagram = isInstagramLabel(opt.label);
-                  const handle = isInstagram ? instagramHandle(opt.value) : "";
-                  const href =
-                    isInstagram && handle && !/instagram\.com/i.test(opt.value)
-                      ? `https://instagram.com/${encodeURIComponent(handle)}`
-                      : bookingHref(opt.value);
-                  const valueText =
-                    isInstagram && handle
-                      ? `instagram.com/${handle}`
-                      : bookingSubtitle(opt.value);
-                  const buttonClass =
-                    "mt-3 flex h-9 items-center justify-center gap-1.5 rounded-full bg-[#9B2C4B] px-3 text-[13px] font-semibold text-white no-underline transition hover:bg-[#7E2140] lg:h-10 lg:text-[14px]";
-                  const isPhone = isPhoneBookingValue(opt.value);
+            {bookingCards.some((c) => c.kind === "phone") ? (
+              <p className="mb-3 text-[15px] leading-[1.4] font-semibold text-ink lg:text-[17px]">
+                Contact the organizers directly
+              </p>
+            ) : null}
+            <div className="flex flex-col gap-2.5 rounded-[18px] bg-[#FBEDEF] p-3 lg:gap-3 lg:rounded-[22px] lg:p-5">
+              {bookingLinks.map((link) => (
+                <a
+                  key={link.id}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackBookingClick(link.id)}
+                  className="flex h-12 min-w-0 items-center gap-3 rounded-[14px] bg-[#9B2C4B] px-4 text-white no-underline transition hover:bg-[#7E2140] lg:h-14 lg:px-5"
+                >
+                  <span className="min-w-0 flex-1 truncate text-[14.5px] font-semibold lg:text-[16px]">
+                    {link.label}
+                  </span>
+                  <ArrowRightIcon className="h-4 w-4 shrink-0 lg:h-[18px] lg:w-[18px]" />
+                </a>
+              ))}
 
-                  if (href && (isInstagram || isPhone)) {
-                    return (
-                      <a
-                        key={opt.id}
-                        href={href}
-                        onClick={() => trackBookingClick(opt.id)}
-                        {...(href.startsWith("http")
-                          ? { target: "_blank", rel: "noopener noreferrer" }
-                          : {})}
-                        className="flex min-w-0 items-center gap-2 rounded-[14px] bg-white p-2.5 no-underline shadow-[0_1px_2px_rgba(30,26,22,0.04)] transition hover:shadow-[0_4px_14px_rgba(155,44,75,0.12)] lg:gap-3 lg:p-3.5"
-                      >
-                        {isInstagram ? (
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_110%,#FDD674_0%,#F77737_25%,#E1306C_50%,#C13584_72%,#833AB4_100%)] text-white lg:h-9 lg:w-9">
-                            <InstagramIcon className="h-4 w-4 lg:h-[18px] lg:w-[18px]" />
-                          </span>
-                        ) : (
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FBE1E7] text-[#9B2C4B] lg:h-9 lg:w-9">
-                            <PhoneIcon className="h-[15px] w-[15px] lg:h-4 lg:w-4" />
-                          </span>
-                        )}
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-[12.5px] leading-[1.25] font-semibold break-words text-ink lg:text-[14.5px]">
-                            {isInstagram ? "Follow on Instagram" : opt.label}
-                          </span>
-                          {isInstagram ? null : (
-                            <span className="mt-0.5 block truncate text-[11px] text-ink-soft lg:text-[13px]">
-                              {valueText}
-                            </span>
-                          )}
-                        </span>
-                      </a>
-                    );
-                  }
-
-                  return (
-                    <div
-                      key={opt.id}
-                      className="flex min-w-0 flex-col rounded-[12px] bg-white p-3 lg:rounded-[14px] lg:p-4"
+              {bookingCards.length > 0 ? (
+                <div
+                  className={`grid gap-2.5 lg:gap-3 ${
+                    bookingCards.length === 1
+                      ? "grid-cols-1"
+                      : bookingCards.length === 2
+                        ? "grid-cols-2"
+                        : "grid-cols-2 sm:grid-cols-3"
+                  }`}
+                >
+                  {bookingCards.map((card) => (
+                    <a
+                      key={card.id}
+                      href={card.href}
+                      onClick={() => trackBookingClick(card.id)}
+                      {...(card.href.startsWith("http")
+                        ? { target: "_blank", rel: "noopener noreferrer" }
+                        : {})}
+                      className="flex min-w-0 items-center gap-2 rounded-[14px] bg-white p-2.5 no-underline shadow-[0_1px_2px_rgba(30,26,22,0.04)] transition hover:shadow-[0_4px_14px_rgba(155,44,75,0.12)] lg:gap-3 lg:p-3.5"
                     >
-                      <div
-                        title={valueText}
-                        className="w-full min-w-0 overflow-hidden text-[14px] font-bold text-ellipsis whitespace-nowrap text-ink lg:text-[15.5px]"
-                      >
-                        {valueText}
-                      </div>
-                      {href ? (
-                        <a
-                          href={href}
-                          className={buttonClass}
-                          onClick={() => trackBookingClick(opt.id)}
-                          aria-label={isInstagram ? "Instagram" : undefined}
-                          {...(href.startsWith("http")
-                            ? { target: "_blank", rel: "noopener noreferrer" }
-                            : {})}
-                        >
-                          {isInstagram ? (
-                            <InstagramIcon className="h-[18px] w-[18px] lg:h-5 lg:w-5" />
-                          ) : (
-                            <span className="min-w-0 truncate">{opt.label}</span>
-                          )}
-                        </a>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
+                      {card.kind === "instagram" ? (
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_110%,#FDD674_0%,#F77737_25%,#E1306C_50%,#C13584_72%,#833AB4_100%)] text-white lg:h-9 lg:w-9">
+                          <InstagramIcon className="h-4 w-4 lg:h-[18px] lg:w-[18px]" />
+                        </span>
+                      ) : (
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FBE1E7] text-[#9B2C4B] lg:h-9 lg:w-9">
+                          <PhoneIcon className="h-[15px] w-[15px] lg:h-4 lg:w-4" />
+                        </span>
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[12.5px] leading-[1.25] font-semibold break-words text-ink lg:text-[14.5px]">
+                          {card.title}
+                        </span>
+                        {card.subtitle ? (
+                          <span className="mt-0.5 block truncate text-[11px] text-ink-soft lg:text-[13px]">
+                            {card.subtitle}
+                          </span>
+                        ) : null}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </section>
         ) : null}
@@ -515,7 +558,7 @@ export default function EventDetailView({
         >
           <div className="flex items-center justify-between px-4 py-4">
             <div className="text-sm font-medium text-white">
-              {event.gallery.length} photos
+              {event.gallery.length > 1 ? `${event.gallery.length} photos` : ""}
             </div>
             <button
               type="button"
@@ -530,13 +573,15 @@ export default function EventDetailView({
             {event.gallery.map((src, i) => (
               <div
                 key={`${src}-${i}`}
-                className="relative h-full min-w-[85%] shrink-0 snap-center overflow-hidden rounded-2xl"
+                className={`relative h-full shrink-0 snap-center overflow-hidden rounded-2xl ${
+                  event.gallery.length > 1 ? "min-w-[85%]" : "min-w-full"
+                }`}
               >
                 <Image
                   src={src}
                   alt=""
                   fill
-                  sizes="85vw"
+                  sizes={event.gallery.length > 1 ? "85vw" : "100vw"}
                   className="object-contain"
                 />
               </div>

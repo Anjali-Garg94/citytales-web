@@ -26,6 +26,7 @@ export default function HeaderMobileMenu() {
   if (!onHome) links.push({ label: "Home", href: "/" });
   if (!onDiscover) links.push({ label: "Discover events", href: "/explore-events" });
   links.push({ label: "Saved Events", href: "/saved-events" });
+  if (pathname !== "/contact") links.push({ label: "Contact us", href: "/contact" });
 
   useEffect(() => {
     if (!open) return;

@@ -172,4 +172,5 @@ export const navLinks = [
   { label: "Activities", href: "/activities" },
   { label: "Exhibitions", href: "/exhibitions" },
   { label: "About", href: "/about" },
+  { label: "Contact us", href: "/contact" },
 ];
