@@ -11,6 +11,7 @@ import {
   CloseIcon,
   GalleryIcon,
   InstagramIcon,
+  PhoneIcon,
   PinIcon,
   ShareIcon,
 } from "@/components/Icons";
@@ -344,6 +345,41 @@ export default function EventDetailView({
                       : bookingSubtitle(opt.value);
                   const buttonClass =
                     "mt-3 flex h-9 items-center justify-center gap-1.5 rounded-full bg-[#9B2C4B] px-3 text-[13px] font-semibold text-white no-underline transition hover:bg-[#7E2140] lg:h-10 lg:text-[14px]";
+                  const isPhone = isPhoneBookingValue(opt.value);
+
+                  if (href && (isInstagram || isPhone)) {
+                    return (
+                      <a
+                        key={opt.id}
+                        href={href}
+                        onClick={() => trackBookingClick(opt.id)}
+                        {...(href.startsWith("http")
+                          ? { target: "_blank", rel: "noopener noreferrer" }
+                          : {})}
+                        className="flex min-w-0 items-center gap-2 rounded-[14px] bg-white p-2.5 no-underline shadow-[0_1px_2px_rgba(30,26,22,0.04)] transition hover:shadow-[0_4px_14px_rgba(155,44,75,0.12)] lg:gap-3 lg:p-3.5"
+                      >
+                        {isInstagram ? (
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_110%,#FDD674_0%,#F77737_25%,#E1306C_50%,#C13584_72%,#833AB4_100%)] text-white lg:h-9 lg:w-9">
+                            <InstagramIcon className="h-4 w-4 lg:h-[18px] lg:w-[18px]" />
+                          </span>
+                        ) : (
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FBE1E7] text-[#9B2C4B] lg:h-9 lg:w-9">
+                            <PhoneIcon className="h-[15px] w-[15px] lg:h-4 lg:w-4" />
+                          </span>
+                        )}
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[12.5px] leading-[1.25] font-semibold break-words text-ink lg:text-[14.5px]">
+                            {isInstagram ? "Follow on Instagram" : opt.label}
+                          </span>
+                          {isInstagram ? null : (
+                            <span className="mt-0.5 block truncate text-[11px] text-ink-soft lg:text-[13px]">
+                              {valueText}
+                            </span>
+                          )}
+                        </span>
+                      </a>
+                    );
+                  }
 
                   return (
                     <div
