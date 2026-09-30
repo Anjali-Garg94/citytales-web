@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
 import SavedEventsClient from "@/components/saved/SavedEventsClient";
+import AppReminderBanner from "@/components/saved/AppReminderBanner";
 
 export const metadata: Metadata = {
   title: "Saved Events | CityTales",
@@ -13,6 +14,7 @@ export default function SavedEventsPage() {
         <h1 className="text-[22px] leading-tight font-bold tracking-[-0.02em] text-ink lg:text-[26px]">
           Saved Events
         </h1>
+        <AppReminderBanner />
         <SavedEventsClient />
       </section>
     </PageShell>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { InstagramIcon, ChatIcon } from "./Icons";
+import { InstagramIcon, ChatIcon, BellIcon } from "./Icons";
 import { CONTACT } from "@/lib/contact";
 import { APP_STORE } from "@/lib/apps";
 
@@ -37,6 +37,10 @@ export default function Footer() {
             <div className="mb-3 text-[11px] font-semibold tracking-[0.1em] text-ink-soft lg:mb-3.5">
               GET THE APP
             </div>
+            <p className="mb-3 flex max-w-[260px] items-start gap-2 text-[13px] leading-[1.5] text-ink-soft lg:mb-3.5">
+              <BellIcon className="mt-px h-4 w-4 shrink-0 text-accent" />
+              Get reminders before your saved events start.
+            </p>
             <div className="flex gap-2.5 lg:flex-col lg:gap-2.5">
               <a
                 href={APP_STORE.url}
