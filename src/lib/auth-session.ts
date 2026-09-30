@@ -43,15 +43,6 @@ export async function setSession(params: {
   });
 }
 
-/** Updates just the user-identity cookie — used after /auth/signup completes a profile. */
-export async function setSessionUser(user: AuthUser): Promise<void> {
-  const store = await cookies();
-  store.set(USER_COOKIE, JSON.stringify(user), {
-    ...COMMON,
-    maxAge: REFRESH_MAX_AGE,
-  });
-}
-
 export async function getSessionUser(): Promise<AuthUser | null> {
   const store = await cookies();
   const raw = store.get(USER_COOKIE)?.value;

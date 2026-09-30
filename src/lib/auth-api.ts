@@ -129,29 +129,6 @@ export function validateOtp(params: {
   });
 }
 
-/**
- * POST /auth/signup — completes a FIRST_TIME user's profile, flipping them
- * to ACTIVE. Requires the Authorization: Bearer <accessToken> header from
- * that same user's validateOtp response (confirmed empirically — a bare
- * unauthenticated call 401s with an empty body); it also trusts whatever
- * `id` is in the body, so callers MUST pass an id read from our own session
- * cookie, never one taken from client input — see auth-session.ts.
- */
-export function completeSignup(
-  profile: {
-    id: string;
-    name: string;
-    phone: string;
-    email?: string;
-    cityId: string;
-    dateOfBirth?: string;
-    gender?: string;
-  },
-  accessToken: string,
-): Promise<AuthUser> {
-  return post<AuthUser>("/auth/signup", profile, accessToken);
-}
-
 /** POST /auth/refreshToken — trades a refresh token for a fresh pair. */
 export function refreshAuthToken(refreshToken: string): Promise<AuthResponse> {
   return post<AuthResponse>("/auth/refreshToken", { refreshToken });
