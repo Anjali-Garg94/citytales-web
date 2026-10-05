@@ -9,7 +9,8 @@
           { "/": "/business/*", "comment": "Business detail" },
           { "/": "/checkin/*", "comment": "QR check-in" },
           { "/": "/ticket/*", "comment": "Ticket" },
-          { "/": "/profile/*", "comment": "Profile" }
+          { "/": "/profile/*", "comment": "Profile" },
+          { "/": "/get-the-app", "comment": "Install QR - opens the app when installed, else the page sends users to the store" }
         ]
       }
     ]
