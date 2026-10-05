@@ -1,0 +1,17 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["H72S2H29HS.com.citytales.project"],
+        "components": [
+          { "/": "/events/*", "comment": "Event detail - what the app shares" },
+          { "/": "/event/*", "comment": "Event detail, legacy singular path" },
+          { "/": "/business/*", "comment": "Business detail" },
+          { "/": "/checkin/*", "comment": "QR check-in" },
+          { "/": "/ticket/*", "comment": "Ticket" },
+          { "/": "/profile/*", "comment": "Profile" }
+        ]
+      }
+    ]
+  }
+}
