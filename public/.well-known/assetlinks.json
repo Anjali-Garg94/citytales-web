@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.app.citytales",
+      "sha256_cert_fingerprints": [
+        "36:02:9E:04:2E:1F:17:DF:6A:A0:63:CC:56:0A:6F:94:3B:96:3A:57:42:55:44:8A:0B:0A:F1:97:40:B2:A0:7F"
+      ]
+    }
+  }
+]
